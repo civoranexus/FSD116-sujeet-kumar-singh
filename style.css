@@ -23,6 +23,7 @@ html,body{
     display: flex;
     align-items: center;
     justify-content: space-around;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 #fakeheader{
     height: 15%;
@@ -159,4 +160,66 @@ html,body{
 .feature-card h3 {
     color: green;
     margin-bottom: 10px;
+}
+
+#dashboard-section {
+    padding: 40px;
+    background-color: #f4f7f4;
+}
+
+.section-title {
+    color: #2d3436;
+    margin-bottom: 30px;
+    font-size: 2rem;
+}
+
+.stats-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-box {
+    flex: 1;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.stat-box i {
+    font-size: 2.5rem;
+    color: yellowgreen;
+}
+
+.inventory-preview {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.tag {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.in-stock {
+     background: #dff9fb; color: #130f40; 
+    
+}
+
+.low-stock {
+     background: #fab1a0; color: #d63031; 
+}
+ 
+table,tr,td,th{
+    border: 3px solid black;
+    border-collapse: collapse;
+    padding: 20px;
 }
