@@ -41,11 +41,11 @@ html,body{
     object-fit: cover;
 }
 
-#page1{
+/* #page1{
     height: 85%;
     width: 100%;
     background-color: white;
-}
+} */
 
 .texts{
     text-align: center;
@@ -100,7 +100,7 @@ html,body{
 }
 /* Home Hero Section */
 #home {
-    height: 70vh;
+    height: 60vh;
     width: 100%;
     background: linear-gradient(rgba(170, 161, 241, 0.683), rgba(7, 181, 21, 0.313)), 
                 url('https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
@@ -138,7 +138,7 @@ html,body{
 #features {
     display: flex;
     justify-content: space-around;
-    padding: 50px 10%;
+    padding: 40px 10%;
     background-color: #f9f9f9;
 }
 
@@ -195,7 +195,7 @@ html,body{
     color: yellowgreen;
 }
 
-.inventory-preview {
+#inventory-preview {
     background: white;
     padding: 25px;
     border-radius: 15px;
