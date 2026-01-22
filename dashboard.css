@@ -14,12 +14,6 @@ html,body{
     height: 100%;
     width: 100%;
 }
-:root {
-    /* --primary-green: #2ecc71; */
-    /* --dark-blue: #2c3e50; */
-    /* --light-bg: #f4f7f6; */
-    /* --white: #ffffff; */
-}
 
 .dashboard-container {
     display: flex;
