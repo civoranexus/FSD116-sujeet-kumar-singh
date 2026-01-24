@@ -83,14 +83,14 @@ html,body{
     margin-bottom: 40px;
 }
 
-.stat-card {
+/* /* .stat-card { */
     background: #ffffff;
     padding: 20px;
     border-radius: 15px;
     display: flex;
     align-items: center;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
+} */
 
 .icon-box {
     width: 50px;
