@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales & Billing | Nursery System</title>
+    <link rel="stylesheet" href="sales.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+            <h1>Sales Management</h1>
+        </header>
+
+        <div class="main-grid">
+            <section class="card billing-section">
+                <h2>Generate New Bill</h2>
+                <form id="sales-form">
+                    <div class="input-group">
+                        <label>Customer Name</label>
+                        <input type="text" id="custName" placeholder="Enter name" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Select Item</label>
+                        <select id="itemSelect">
+                            <option value="">-- Choose Seed/Plant --</option>
+                            <option value="50">Rose Plant (₹50)</option>
+                            <option value="120">Mango Tree (₹120)</option>
+                            <option value="30">Tomato Seeds (₹30)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Quantity</label>
+                            <input type="number" id="qty" min="1" value="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Discount (%)</label>
+                            <input type="number" id="discount" value="0">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-primary">Add to Bill</button>
+                </form>
+            </section>
+
+            <section class="card summary-section">
+                <h2>Order Summary</h2>
+                <div class="receipt-preview">
+                    <div class="receipt-header">
+                        <h3>Nursery Receipt</h3>
+                        <p id="bill-date">Date:<p id="date"></p></p>
+                    </div>
+                    <div class="receipt-body">
+                        <p><strong>Customer:</strong> <span id="view-cust">-</span></p>
+                        <hr>
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span>₹0.00</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tax (5%):</span>
+                            <span>₹0.00</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total Amount:</span>
+                            <span>₹0.00</span>
+                        </div>
+                    </div>
+                    <button class="btn-success">Confirm & Print Bill</button>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script>
+    let today = new Date(); 
+    document.getElementById("date").innerText = today.toDateString();
+    </script>
+</body>
+</html>
