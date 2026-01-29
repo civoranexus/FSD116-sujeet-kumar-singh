@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Management System</title>
+    <link rel="stylesheet" href="Admin_dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="logo-section">
+                <h2>AdminPanel</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="inventory.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+                    <li><a href="sales.html"><i class="fas fa-shopping-cart"></i> Sales</a></li>
+                    <li><a href="staff.html"><i class="fas fa-users"></i> Staff</a></li>
+                    <li><a href="customer.html"><i class="fas fa-user-tie"></i> Customers</a></li>
+                    <li><a href="login.html" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>System Overview</h1>
+                <div class="user-info">
+                    <span>Welcome, Admin</span>
+                    <img src="logo.png" alt="Profile" width="40">
+                </div>
+            </header>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-dollar-sign"></i>
+                    <div>
+                        <h3>Total Revenue</h3>
+                        <p>$24,500</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-box-open"></i>
+                    <div>
+                        <h3>Low Stock Items</h3>
+                        <p>12 Alerts</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <h3>Total Staff</h3>
+                        <p>08 Active</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="data-section">
+                <h2>Recent Transactions</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Product</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#1042</td>
+                            <td>Organic Seeds</td>
+                            <td>Jan 28, 2026</td>
+                            <td>$150.00</td>
+                            <td><span class="status completed">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td>#1041</td>
+                            <td>NPK Fertilizer</td>
+                            <td>Jan 27, 2026</td>
+                            <td>$2,400.00</td>
+                            <td><span class="status pending">Pending</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
