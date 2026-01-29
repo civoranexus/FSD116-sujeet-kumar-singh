@@ -5,38 +5,20 @@ require('dotenv').config();
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// MongoDB Connection
+const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/nurseryDB';
 
-const MONGO_URI = "mongodb://localhost:27017/nurseryDB"; 
-mongoose.connect(MONGO_URI)
-    .then(() => console.log("Database connected successfully!"))
-    .catch(err => console.log("DB Connection Error:", err));
+mongoose.connect(mongoURI)
+    .then(() => console.log("✅ MongoDB Connected..."))
+    .catch(err => console.log("❌ DB Connection Error:", err));
 
+// Routes
+const inventoryRoutes = require('./routes/inventory');
+app.use('/api/inventory', inventoryRoutes);
 
-const seedSchema = new mongoose.Schema({
-    name: String,
-    Item: String,
-    category: String,
-    stockQuantity: Number,
-    price: Number
-});
-const Seed = mongoose.model('Seed', seedSchema);
-
-
-app.get('/api/seeds', async (req, res) => {
-    const seeds = await Seed.find();
-    res.json(seeds);
-});
-
-app.post('/api/seeds', async (req, res) => {
-    const newSeed = new Seed(req.body);
-    await newSeed.save();
-    res.json({ message: "Seed added!" });
-});
-
-// Server Start
-app.listen(5000, () => {
-    console.log("Server is running on http://localhost:5000");
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
