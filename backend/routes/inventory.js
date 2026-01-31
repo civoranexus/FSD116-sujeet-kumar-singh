@@ -29,4 +29,14 @@ router.post('/add', async (req, res) => {
     }
 });
 
+// 3. Seed delete karne ke liye (DELETE)
+router.delete('/:id', async (req, res) => {
+    try {
+        await Seed.findByIdAndDelete(req.params.id);
+        res.json({ message: "Seed delete ho gaya!" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
