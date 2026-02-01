@@ -1,17 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Sales = () => {
-  return (
-    <div style={{ padding: '20px' }}>
-      <h2 style={{ color: '#1565c0' }}>💰 Sales Tracking</h2>
-      <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-        <strong>Quick Summary:</strong> Aaj ki total sale: ₹4,500
-      </div>
-      <button style={{ padding: '10px 20px', backgroundColor: '#1565c0', color: 'white', border: 'none', borderRadius: '4px' }}>
-        + Add New Sale
-      </button>
-    </div>
-  );
+    const [seeds, setSeeds] = useState([]);
+    const [selectedSeed, setSelectedSeed] = useState('');
+    const [quantity, setQuantity] = useState(0);
+
+    useEffect(() => {
+        axios.get('http://localhost:5000/api/inventory').then(res => setSeeds(res.data));
+    }, []);
+
+    const handleSale = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.put(`http://localhost:5000/api/inventory/sell/${selectedSeed}`, { sellQuantity: quantity });
+            alert("Stock Update ho gaya!");
+            window.location.reload(); 
+        } catch (err) {
+            alert(err.response.data.message);
+        }
+    };
+
+    return (
+        <div style={{ padding: '20px' }}>
+            <h2>Sale Seed </h2>
+            <form onSubmit={handleSale}>
+                <select onChange={(e) => setSelectedSeed(e.target.value)} required style={{padding:'10px', marginRight:'10px'}}>
+                    <option value="">Beej Chunein (Select Seed)</option>
+                    {seeds.map(s => <option key={s._id} value={s._id}>{s.name} (Stock: {s.quantity})</option>)}
+                </select>
+                <input type="number" placeholder="Kitna bechna hai?" onChange={(e) => setQuantity(e.target.value)} required style={{padding:'10px', marginRight:'10px'}} />
+                <button type="submit" style={{padding:'10px', background:'blue', color:'white'}}>Confirm Sale</button>
+            </form>
+        </div>
+    );
 };
 
 export default Sales;

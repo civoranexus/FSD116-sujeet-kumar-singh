@@ -8,7 +8,8 @@ import Sales from './pages/Sales';
 import Procurement from './pages/Procurement';
 import Staff from './pages/Staff';
 import Customer from './pages/Customer';
-import Home from './pages/Home'; // Check karo ye import hai ya nahi
+import Home from './pages/Home';
+import Register from './pages/Register'; 
 
 function Layout() {
   const location = useLocation();
@@ -33,6 +34,7 @@ function Layout() {
           <Route path="/procurement" element={<Procurement />} />
           <Route path="/staff" element={<Staff />} />
           <Route path="/Customer" element={<Customer />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </div>
     </div>

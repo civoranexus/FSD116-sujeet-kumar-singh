@@ -14,7 +14,7 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar" style={styles.sidebar}>
-      <li style={styles.li}><Link to="/" style={styles.link}>🏠 Home</Link></li>
+      {/* <li style={styles.li}><Link to="/" style={styles.link}>🏠 Home</Link></li> */}
       <h2 style={{ textAlign: 'center' }}>Nursery App</h2>
       <p style={{ textAlign: 'center', fontSize: '12px' }}>Role: <b>{userRole.toUpperCase()}</b></p>
       <hr />
