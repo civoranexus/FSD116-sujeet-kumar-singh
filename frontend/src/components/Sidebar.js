@@ -4,12 +4,12 @@ import '../styles/App.css';
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  // LocalStorage se role nikalna
+  
   const userRole = localStorage.getItem('userRole') || 'customer';
 
   const handleLogout = () => {
-    localStorage.removeItem('userRole'); // Role clear karein
-    navigate('/'); // Login page par bhej dein
+    localStorage.removeItem('userRole'); 
+    navigate('/'); 
   };
 
   return (
@@ -20,7 +20,7 @@ const Sidebar = () => {
       <hr />
       
       <ul style={styles.ul}>
-        {/* Sabke liye common links */}
+        
         {(userRole === 'admin' || userRole === 'staff') && (
           <>
             <li style={styles.li}><Link to="/dashboard" style={styles.link}>📊 Dashboard</Link></li>
@@ -28,7 +28,7 @@ const Sidebar = () => {
           </>
         )}
 
-        {/* Sirf Admin ke liye */}
+
         {userRole === 'admin' && (
           <>
             <li style={styles.li}><Link to="/staff" style={styles.link}>👥 Staff Management</Link></li>
@@ -36,12 +36,12 @@ const Sidebar = () => {
           </>
         )}
 
-        {/* Staff aur Admin dono ke liye */}
+  
         {(userRole === 'admin' || userRole === 'staff') && (
           <li style={styles.li}><Link to="/sales" style={styles.link}>💰 Sales</Link></li>
         )}
 
-        {/* Customer ke liye special link */}
+       
         {userRole === 'customer' && (
           <li style={styles.li}><Link to="/customer" style={styles.link}>🌱 My Orders</Link></li>
         )}

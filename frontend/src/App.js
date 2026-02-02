@@ -13,7 +13,7 @@ import Register from './pages/Register';
 
 function Layout() {
   const location = useLocation();
-  // Login page par sidebar nahi dikhana hai
+  
   const isLoginPage = location.pathname === '/';
   const isFullPage = location.pathname === '/' || location.pathname === '/login';
 
