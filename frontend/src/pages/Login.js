@@ -1,57 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/App.css'; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('customer');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    // Jab bhi login page par aayein, purana session saaf kar dein
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('name');
+  }, []);
 
-    if (role === 'admin' && email === 'admin@test.com' && password === 'admin123') {
-      navigate('/dashboard');
-    } else {
-      alert("Invalid Credentials");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      // Backend ko request bhej rahe hain
+      const res = await axios.post('http://localhost:5000/api/auth/login', { 
+        email: email.trim(), 
+        password: password 
+      });
+
+      console.log("Server Response:", res.data);
+
+      // Data save karna bahut zaroori hai
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('role', res.data.role);
+      localStorage.setItem('name', res.data.name); 
+
+      // Role ke hisab se redirection
+      if (res.data.role === 'admin' || res.data.role === 'staff') {
+        window.location.href = '/dashboard'; 
+      } else {
+        window.location.href = '/customer'; 
+      }
+    } catch (err) {
+      console.error("Login Error:", err.response?.data);
+      alert(err.response?.data?.message || "Invalid Email or Password!");
     }
   };
 
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        <h2 style={{ color: '#2e7d32', textAlign: 'center' }}>Nursery Portal</h2>
+        <div className="login-header">
+          <span style={{fontSize: '50px'}}>🌱</span>
+          <h2>Nursery Portal</h2>
+          <p>Sign in to manage your garden</p>
+        </div>
         
         <form onSubmit={handleLogin} className="login-form">
-          <label>Select Role:</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)} className="login-input">
-            <option value="admin">Admin</option>
-            <option value="staff">Staff</option>
-            <option value="customer">Customer</option>
-          </select>
+          <div className="input-group">
+            <label>Email Address</label>
+            <input 
+              className="login-input" 
+              type="email" 
+              placeholder="admin@test.com" 
+              onChange={(e)=>setEmail(e.target.value)} 
+              required 
+            />
+          </div>
 
-          <input 
-            type="email" placeholder="Email" 
-            value={email} onChange={(e) => setEmail(e.target.value)} 
-            className="login-input" required 
-          />
-          
-          <input 
-            type="password" placeholder="Password" 
-            value={password} onChange={(e) => setPassword(e.target.value)} 
-            className="login-input" required 
-          />
+          <div className="input-group">
+            <label>Password</label>
+            <input 
+              className="login-input" 
+              type="password" 
+              placeholder="••••••••" 
+              onChange={(e)=>setPassword(e.target.value)} 
+              required 
+            />
+          </div>
 
-          <button type="submit" className="login-button">Login as {role}</button>
+          <button className="login-button" type="submit">Login Now</button>
         </form>
 
-
         <div className="register-link-container">
-          <p style={{ fontSize: '14px', color: '#666' }}>Naya account chahiye?</p>
-          <Link to="/register" className="register-link">
-            Create New Account
-          </Link>
+          <span>New here? </span>
+          <Link to="/register" className="register-link">Create an Account</Link>
         </div>
       </div>
     </div>

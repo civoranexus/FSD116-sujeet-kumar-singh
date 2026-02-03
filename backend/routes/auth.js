@@ -1,53 +1,84 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const User = require('../models/User');
-const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'aapka-email@gmail.com', 
-    pass: 'xxxx xxxx xxxx xxxx'   
-  }
-});
-
-router.post('/send-otp', async (req, res) => {
-    const { email } = req.body;
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore[email] = otp;
-
-    const mailOptions = {
-        from: '"Nursery Portal" <sujeet.example@gmail.com>',
-        to: email,
-        subject: 'Email Verification OTP',
-        text: `Nursery Portal registration ke liye aapka OTP hai: ${otp}. Ye 5 minute ke liye valid hai.`
-    };
-
+// 1. LOGIN ROUTE (Yeh missing tha, isliye login nahi ho raha tha)
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
     try {
-        await transporter.sendMail(mailOptions);
-        console.log("OTP Sent to:", email); 
-        res.status(200).json({ message: "OTP send!" });
-    } catch (error) {
-        console.error("Nodemailer Error:", error); 
-        res.status(500).json({ message: "Email not send", error: error.message });
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        
+        if (!user) {
+            return res.status(400).json({ message: "User nahi mila!" });
+        }
+
+        // Direct password comparison
+        if (user.password !== password) {
+            return res.status(400).json({ message: "Galat password!" });
+        }
+
+        // Token Generation (Secret key wahi rakhein jo server.js mein ho)
+        const token = jwt.sign({ id: user._id, role: user.role }, 'SECRET123');
+        
+        res.json({ 
+            token, 
+            role: user.role, 
+            name: user.name 
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
     }
 });
 
-// 2. Route: Verify & Register
-router.post('/register', async (req, res) => {
-    const { name, email, mobile, password, otp } = req.body;
+// 2. ADD STAFF ROUTE
+router.post('/add-staff', async (req, res) => {
+    const { name, email, password, mobile } = req.body;
+    try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ message: "Email pehle se register hai!" });
 
-    if (otpStore[email] === otp) {
-        try {
-            const newUser = new User({ name, email, mobile, password });
-            await newUser.save();
-            delete otpStore[email]; 
-            res.status(201).json({ message: "Account Created Successfully!" });
-        } catch (err) {
-            res.status(400).json({ message: "Database error ya User pehle se hai." });
+        const newStaff = new User({
+            name,
+            email: email.toLowerCase().trim(),
+            password,
+            mobile,
+            role: 'staff'
+        });
+
+        await newStaff.save();
+        res.status(201).json({ message: "Staff Successfully Add Ho Gaya! ✅" });
+    } catch (err) {
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+
+// 3. GET ALL USERS ROUTE
+router.get('/users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: "Load nahi ho paya" });
+    }
+});
+
+// 4. DELETE STAFF ROUTE
+router.delete('/delete-staff/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const userToDelete = await User.findById(userId);
+        
+        if (!userToDelete) return res.status(404).json({ message: "User nahi mila" });
+        
+        if (userToDelete.role === 'admin') {
+            return res.status(400).json({ message: "Admin ko delete nahi kiya ja sakta!" });
         }
-    } else {
-        res.status(400).json({ message: "Galat OTP! Kripya sahi code dalein." });
+
+        await User.findByIdAndDelete(userId);
+        res.json({ message: "Staff successfully remove ho gaya! 🗑️" });
+    } catch (err) {
+        res.status(500).json({ message: "Delete karne mein error aayi" });
     }
 });
 

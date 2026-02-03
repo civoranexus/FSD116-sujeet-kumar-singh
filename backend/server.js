@@ -1,27 +1,28 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const User = require('./models/User'); 
 require('dotenv').config();
 
 const app = express();
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
+mongoose.connect('mongodb://localhost:27017/nurseryDB')
+    .then(async () => {
+        console.log("✅ MongoDB Connected...");
+        const userCount = await User.countDocuments();
+        if (userCount === 0) {
+            await User.insertMany([
+                { name: "Admin Sujeet", email: "admin@test.com", password: "admin123", role: "admin" },
+                { name: "Staff Member", email: "staff@test.com", password: "staff123", role: "staff" },
+                { name: "Customer Sujeet", email: "customer@test.com", password: "customer123", role: "customer" }
+            ]);
+            console.log("⭐ Default Users Created!");
+        }
+    });
 
-// MongoDB Connection
-const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/nurseryDB';
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/inventory', require('./routes/inventory'));
 
-mongoose.connect(mongoURI)
-    .then(() => console.log("✅ MongoDB Connected..."))
-    .catch(err => console.log("❌ DB Connection Error:", err));
-
-// Routes
-const inventoryRoutes = require('./routes/inventory');
-app.use('/api/inventory', inventoryRoutes);
-const authRoutes = require('./routes/auth');
-app.use('/api/auth', authRoutes);
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(5000, () => console.log(`🚀 Server running on port 5000`));

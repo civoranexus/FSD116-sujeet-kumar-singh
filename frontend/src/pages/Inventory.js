@@ -8,7 +8,8 @@ const Inventory = () => {
     name: '',
     category: '',
     quantity: '', 
-    price: ''
+    price: '',
+    image: ''
 });
 
     // 1. Data Fetch 
@@ -32,22 +33,19 @@ const Inventory = () => {
 
 const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-        
-        const res = await axios.post('http://localhost:5000/api/inventory/add', {
-            ...formData,
-            quantity: Number(formData.quantity), 
-            price: Number(formData.price)        
-        });
+    console.log("Form Submit Data:", formData);
 
-        console.log("Response:", res.data);
-        alert("Beej Successfully Add Ho Gaya! ✅");
+    try {
+        const res = await axios.post('http://localhost:5000/api/inventory/add', formData);
         
-        setFormData({ name: '', category: '', quantity: '', price: '' });
-        fetchSeeds();
+        if (res.status === 201) {
+            alert("Beej Successfully Add Ho Gaya! ✅");
+            setFormData({ name: '', category: '', quantity: '', price: '' }); // Form reset
+            fetchSeeds(); // List refresh
+        }
     } catch (err) {
-        console.error("Add karne mein error:", err.response?.data || err.message);
-        alert("Galti hui: " + (err.response?.data?.message || "Server error"));
+        console.error("Frontend Error:", err.response?.data);
+        alert("Add nahi ho paya: " + (err.response?.data?.message || "Server Error"));
     }
 };
 
@@ -59,11 +57,51 @@ const handleSubmit = async (e) => {
             <div style={{ background: '#f1f8e9', padding: '20px', borderRadius: '10px', marginBottom: '20px' }}>
                 <h3>Add New Seed Item</h3>
                 <form onSubmit={handleSubmit}>
-                    <input name="name" placeholder="Seed Name" value={formData.name} onChange={handleChange} required style={inputStyle} />
-                    <input name="category" placeholder="Category" value={formData.category} onChange={handleChange} required style={inputStyle} />
-                    <input name="quantity" type="number" placeholder="Quantity" value={formData.quantity} onChange={handleChange} required style={inputStyle} />
-                    <input name="price" type="number" placeholder="Price" value={formData.price} onChange={handleChange} required style={inputStyle} />
-                    <button type="submit" style={buttonStyle}>Add Seed</button>
+                    <input 
+                        name="name" 
+                        placeholder="Seed Name" 
+                        value={formData.name} 
+                        onChange={handleChange} 
+                        required style={inputStyle} 
+                    />
+                    <input 
+                        name="category" 
+                        placeholder="Category" 
+                        value={formData.category} 
+                        onChange={handleChange} 
+                        required style={inputStyle} 
+                    />
+                    <input 
+                        name="quantity" 
+                        type="number" 
+                        placeholder="Quantity" 
+                        value={formData.quantity} 
+                        onChange={handleChange} 
+                        required style={inputStyle}
+                    />
+                    
+                    <input 
+                        name="price" 
+                        type="number" 
+                        placeholder="Price"
+                        value={formData.price} 
+                        onChange={handleChange} 
+                        required style={inputStyle} 
+                    />
+
+                    <button 
+                        type="submit" 
+                        style={buttonStyle}>Add Seed
+                    </button>
+
+                    <input 
+                        className="login-input" 
+                        placeholder="Image URL (Google se link copy karein)" 
+                        value={formData.image} 
+                        onChange={e => setFormData(
+                            {...formData, image: e.target.value}
+                            )} 
+                    />
                 </form>
             </div>
 

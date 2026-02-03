@@ -1,64 +1,37 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const Seed = require('../models/Seed');
 
-// Get all items (for Dashboard)
+// 1. Get all seeds
 router.get('/', async (req, res) => {
     try {
         const seeds = await Seed.find();
         res.json(seeds);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: "Data load nahi ho paya" });
     }
 });
 
-// Add new item (for Inventory form)
+// 2. Add new seed
 router.post('/add', async (req, res) => {
+    console.log("Add Seed Request Received:", req.body); // Terminal mein check karein
     try {
-        console.log("Backend Received:", req.body); 
+        const { name, category, quantity, price } = req.body;
         
-        const newSeed = new Seed(req.body);
-        const savedSeed = await newSeed.save();
-        res.status(201).json(savedSeed);
+        const newSeed = new Seed({
+            name,
+            category,
+            quantity: Number(quantity),
+            price: Number(price)
+        });
+
+        await newSeed.save();
+        console.log("✅ Seed Saved Successfully!");
+        res.status(201).json(newSeed);
     } catch (err) {
-        res.status(400).json({ message: err.message }); 
+        console.error("❌ Save Error:", err.message);
+        res.status(400).json({ message: "Galti: " + err.message });
     }
-});
-
-// 3. Seed deleted
-router.delete('/:id', async (req, res) => {
-    try {
-        await Seed.findByIdAndDelete(req.params.id);
-        res.json({ message: "Seed delete ho gaya!" });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// 4. Stock Sell  (PUT)
-router.put('/sell/:id', async (req, res) => {
-    try {
-        const { sellQuantity } = req.body;
-        const seed = await Seed.findById(req.params.id);
-
-        if (seed.quantity < sellQuantity) {
-            return res.status(400).json({ message: "Stock kam hai!" });
-        }
-
-        seed.quantity -= sellQuantity; 
-        await seed.save();
-        res.json({ message: "Bikri safal rahi!", updatedStock: seed.quantity });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-const seedSchema = new mongoose.Schema({
-    name: String,
-    category: String,
-    quantity: Number, // Sab small letters mein
-    price: Number
 });
 
 module.exports = router;

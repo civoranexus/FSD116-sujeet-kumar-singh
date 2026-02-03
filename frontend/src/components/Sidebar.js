@@ -1,63 +1,62 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../styles/App.css';
+import '../styles/App.css'; 
 
 const Sidebar = () => {
+  const role = localStorage.getItem('role');
   const navigate = useNavigate();
-  
-  const userRole = localStorage.getItem('userRole') || 'customer';
 
   const handleLogout = () => {
-    localStorage.removeItem('userRole'); 
-    navigate('/'); 
-  };
+    localStorage.clear();
+    window.location.href = '/login';
+};
 
   return (
-    <div className="sidebar" style={styles.sidebar}>
-      {/* <li style={styles.li}><Link to="/" style={styles.link}>🏠 Home</Link></li> */}
-      <h2 style={{ textAlign: 'center' }}>Nursery App</h2>
-      <p style={{ textAlign: 'center', fontSize: '12px' }}>Role: <b>{userRole.toUpperCase()}</b></p>
-      <hr />
+    <div className="sidebar-nav">
+      <div className="sidebar-header">
+        <h3>🌱 Nursery App</h3>
+        <p className="role-badge">{role?.toUpperCase()}</p>
+      </div>
       
-      <ul style={styles.ul}>
-        
-        {(userRole === 'admin' || userRole === 'staff') && (
+      <div className="sidebar-links">
+        {/* Admin & Staff Common */}
+        {(role === 'admin' || role === 'staff') && (
           <>
-            <li style={styles.li}><Link to="/dashboard" style={styles.link}>📊 Dashboard</Link></li>
-            <li style={styles.li}><Link to="/inventory" style={styles.link}>📦 Inventory</Link></li>
+            <Link to="/dashboard">📊 Dashboard</Link>
+            <Link to="/inventory">🌿 Inventory</Link>
           </>
         )}
 
+        {role === 'customer' && (
+        <>
+          <Link to="/customer">🛒 Shop Seeds</Link>
+          <Link to="/orders">📦 My Orders</Link>
+          <Link to="/profile">👤 My Profile</Link>
+        </>
+        )}
 
-        {userRole === 'admin' && (
+        {/* Admin Specific */}
+        {role === 'admin' && (
           <>
-            <li style={styles.li}><Link to="/staff" style={styles.link}>👥 Staff Management</Link></li>
-            <li style={styles.li}><Link to="/procurement" style={styles.link}>🚜 Procurement</Link></li>
+            <Link to="/staff">👥 Staff List</Link>
+            <Link to="/procurement">🚜 Procurement</Link>
           </>
         )}
 
-  
-        {(userRole === 'admin' || userRole === 'staff') && (
-          <li style={styles.li}><Link to="/sales" style={styles.link}>💰 Sales</Link></li>
-        )}
+        {/* Staff Specific */}
+        {role === 'staff' && <Link to="/sales">💰 Daily Sales</Link>}
 
-       
-        {userRole === 'customer' && (
-          <li style={styles.li}><Link to="/customer" style={styles.link}>🌱 My Orders</Link></li>
+        {/* Customer Specific */}
+        {role === 'customer' && (
+          <>
+            <Link to="/customer">🛒 Shop Seeds</Link>
+            <Link to="/orders">📦 My Orders</Link>
+          </>
         )}
-      </ul>
+      </div>
 
-      <button onClick={handleLogout} style={styles.logoutBtn}>Logout</button>
+      <button onClick={handleLogout} className="logout-btn">Logout</button>
     </div>
   );
 };
-
-const styles = {
-  sidebar: { width: '250px', height: '100vh', background: '#2e7d32', color: 'white', position: 'fixed', padding: '20px' },
-  ul: { listStyle: 'none', padding: 0 },
-  li: { margin: '20px 0' },
-  link: { color: 'white', textDecoration: 'none', fontSize: '17px' },
-  logoutBtn: { marginTop: '30px', width: '100%', padding: '10px', background: '#c62828', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }
-};
-
 export default Sidebar;
