@@ -10,11 +10,11 @@ import Staff from './pages/Staff';
 import Customer from './pages/Customer';
 import Home from './pages/Home';
 import Register from './pages/Register'; 
+import Orders from './pages/Orders';
 
 function Layout() {
   const location = useLocation();
   
-  // In pages par Sidebar bilkul nahi dikhega
   const noSidebarPages = ['/', '/login', '/register'];
   const hideSidebar = noSidebarPages.includes(location.pathname);
 
@@ -38,6 +38,7 @@ function Layout() {
           <Route path="/procurement" element={<Procurement />} />
           <Route path="/staff" element={<Staff />} />
           <Route path="/customer" element={<Customer />} />
+          <Route path="/orders" element={<Orders />} />
         </Routes>
       </div>
     </div>

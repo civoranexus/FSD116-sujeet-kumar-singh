@@ -9,7 +9,7 @@ const Sidebar = () => {
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/login';
-};
+  };
 
   return (
     <div className="sidebar-nav">
@@ -19,7 +19,6 @@ const Sidebar = () => {
       </div>
       
       <div className="sidebar-links">
-        {/* Admin & Staff Common */}
         {(role === 'admin' || role === 'staff') && (
           <>
             <Link to="/dashboard">📊 Dashboard</Link>
@@ -27,15 +26,6 @@ const Sidebar = () => {
           </>
         )}
 
-        {role === 'customer' && (
-        <>
-          <Link to="/customer">🛒 Shop Seeds</Link>
-          <Link to="/orders">📦 My Orders</Link>
-          <Link to="/profile">👤 My Profile</Link>
-        </>
-        )}
-
-        {/* Admin Specific */}
         {role === 'admin' && (
           <>
             <Link to="/staff">👥 Staff List</Link>
@@ -43,14 +33,16 @@ const Sidebar = () => {
           </>
         )}
 
-        {/* Staff Specific */}
-        {role === 'staff' && <Link to="/sales">💰 Daily Sales</Link>}
-
-        {/* Customer Specific */}
+       
+        {role === 'staff' && (
+          <Link to="/sales">💰 Daily Sales</Link>
+        )}
+        
         {role === 'customer' && (
           <>
             <Link to="/customer">🛒 Shop Seeds</Link>
             <Link to="/orders">📦 My Orders</Link>
+            <Link to="/profile">👤 My Profile</Link>
           </>
         )}
       </div>
@@ -59,4 +51,5 @@ const Sidebar = () => {
     </div>
   );
 };
+
 export default Sidebar;

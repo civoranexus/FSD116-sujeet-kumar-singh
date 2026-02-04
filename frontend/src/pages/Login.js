@@ -9,7 +9,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Jab bhi login page par aayein, purana session saaf kar dein
+    
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('name');
@@ -18,7 +18,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Backend ko request bhej rahe hain
+      
       const res = await axios.post('http://localhost:5000/api/auth/login', { 
         email: email.trim(), 
         password: password 
@@ -26,12 +26,11 @@ const Login = () => {
 
       console.log("Server Response:", res.data);
 
-      // Data save karna bahut zaroori hai
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('role', res.data.role);
       localStorage.setItem('name', res.data.name); 
+      localStorage.setItem('userId', res.data.id);
 
-      // Role ke hisab se redirection
       if (res.data.role === 'admin' || res.data.role === 'staff') {
         window.location.href = '/dashboard'; 
       } else {
