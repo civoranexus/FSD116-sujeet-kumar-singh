@@ -23,6 +23,7 @@ const Sidebar = () => {
           <>
             <Link to="/dashboard">📊 Dashboard</Link>
             <Link to="/inventory">🌿 Inventory</Link>
+            <Link to="/orders">📦 Order Management</Link>
           </>
         )}
 
@@ -37,7 +38,7 @@ const Sidebar = () => {
         {role === 'staff' && (
           <Link to="/sales">💰 Daily Sales</Link>
         )}
-        
+
         {role === 'customer' && (
           <>
             <Link to="/customer">🛒 Shop Seeds</Link>

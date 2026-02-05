@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema({
     seed: { type: mongoose.Schema.Types.ObjectId, ref: 'Seed', required: true },
     quantity: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
-    status: { type: String, default: 'Pending' }, 
+    status: { type: String, default: 'Pending' ,enum: ['Pending', 'Accepted', 'Shipped', 'Delivered']}, 
     orderDate: { type: Date, default: Date.now },
     address: { type: String, required: true }
 });

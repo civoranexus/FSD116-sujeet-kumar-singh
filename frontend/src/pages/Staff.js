@@ -21,7 +21,7 @@ const Staff = () => {
             try {
                 await axios.delete(`http://localhost:5000/api/auth/delete-staff/${id}`);
                 alert("Staff Removed! ✅");
-                fetchUsers(); // List ko turant update karein
+                fetchUsers(); 
             } catch (err) {
                 alert(err.response?.data?.message || "Error removing staff");
             }
@@ -44,7 +44,6 @@ const Staff = () => {
         <div style={{ padding: '30px' }}>
             <h2 style={{ color: '#2e7d32' }}>👥 Staff Management</h2>
 
-            {/* Add Staff Form Code (Same as before) */}
             <div style={{ background: '#e8f5e9', padding: '20px', borderRadius: '10px', marginBottom: '30px' }}>
                 <h3>Add New Staff Member</h3>
                 <form onSubmit={handleAddStaff} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -56,7 +55,6 @@ const Staff = () => {
                 </form>
             </div>
 
-            {/* --- Updated Table with Action Column --- */}
             <table border="1" cellPadding="12" style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead style={{ background: '#2e7d32', color: 'white' }}>
                     <tr>

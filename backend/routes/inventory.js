@@ -2,6 +2,39 @@ const express = require('express');
 const router = express.Router();
 const Seed = require('../models/Seed');
 const Order = require('../models/Order');
+const User = require('../models/User'); 
+
+router.get('/admin-stats', async (req, res) => {
+    try {
+        
+        const userRole = req.headers['role'];
+        if (userRole !== 'admin' && userRole !== 'staff') {
+            return res.status(403).json({ message: "You are not acces the page!" });
+        }
+
+        const orders = await Order.find();
+        const seeds = await Seed.find();
+
+        const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+        
+        const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+
+        const lowStockItems = seeds.filter(s => s.quantity < 5).map(s => ({
+            name: s.name,
+            quantity: s.quantity
+        }));
+
+        res.json({
+            totalRevenue,
+            totalOrders: orders.length,
+            pendingOrders,
+            lowStockCount: lowStockItems.length,
+            lowStockItems 
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error" });
+    }
+});
 
 // 1. Get all seeds
 router.get('/', async (req, res) => {
@@ -15,72 +48,107 @@ router.get('/', async (req, res) => {
 
 // 2. Add new seed
 router.post('/add', async (req, res) => {
-    console.log("Add Seed Request Received:", req.body);
     try {
         const { name, category, quantity, price } = req.body;
-        
         const newSeed = new Seed({
             name,
             category,
             quantity: Number(quantity),
             price: Number(price)
         });
-
         await newSeed.save();
-        console.log("✅ Seed Saved Successfully!");
         res.status(201).json(newSeed);
     } catch (err) {
-        console.error("❌ Save Error:", err.message);
-        res.status(400).json({ message: "Galti: " + err.message });
+        res.status(400).json({ message: "Error: " + err.message });
     }
 });
-router.post('/place-order', async (req, res) => {
-   
-    const { customerId, seedId, quantity, totalPrice, address } = req.body;
 
+// 3. Place Order 
+router.post('/place-order', async (req, res) => {
+    const { customerId, seedId, quantity, totalPrice } = req.body;
     try {
+        const user = await User.findById(customerId);
+        if (!user || !user.address || !user.mobile || !user.pincode) {
+            return res.status(400).json({ 
+                message: "Please complete your Profile (Mobile, Pincode, Address) first! 👤" 
+            });
+        }
+
         const seed = await Seed.findById(seedId);
         if (!seed || seed.quantity < quantity) {
             return res.status(400).json({ message: "Stock low!" });
         }
 
-        
+        const fullAddress = `${user.address}, Pincode: ${user.pincode}, Mobile: ${user.mobile}`;
+
         const newOrder = new Order({
             customer: customerId,
             seed: seedId,
             quantity,
             totalPrice,
-            address 
+            address: fullAddress 
         });
-        await newOrder.save();
 
+        await newOrder.save();
         seed.quantity -= quantity;
         await seed.save();
 
-        res.status(201).json({ message: "Order Successfully! 📦" });
+        res.status(201).json({ message: "Order Placed Successfully! 📦" });
     } catch (err) {
-        console.error(err); 
         res.status(500).json({ message: "Server Error: Order not save! " });
     }
 });
 
-
-router.put('/update-address/:orderId', async (req, res) => {
-    const { newAddress } = req.body;
+// Get ALL Orders
+router.get('/all-orders', async (req, res) => {
     try {
-        await Order.findByIdAndUpdate(req.params.orderId, { address: newAddress });
-        res.json({ message: "Updated" });
+        const orders = await Order.find()
+            .populate('seed')
+            .populate('customer', 'name email')
+            .sort({ orderDate: -1 });
+        res.json(orders);
     } catch (err) {
-        res.status(500).send(err);
+        res.status(500).json({ message: "All orders not loaded!" });
     }
 });
 
+// Update Order Status
+router.put('/update-status/:id', async (req, res) => {
+    try {
+        const { status } = req.body;
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.id, 
+            { status: status }, 
+            { new: true }
+        );
+        res.json(updatedOrder);
+    } catch (err) {
+        res.status(500).json({ message: "Status update failed" });
+    }
+});
 
+// Update Address (Single Order)
+router.put('/update-address/:orderId', async (req, res) => {
+    const { newAddress } = req.body;
+    try {
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.orderId, 
+            { address: newAddress },
+            { new: true } 
+        );
+        if (!updatedOrder) return res.status(404).json({ message: "Order not found!" });
+        res.json({ message: "address change! ✅" });
+    } catch (err) {
+        res.status(500).send({ message: "Update fail: " + err.message });
+    }
+});
+
+// My Orders
 router.get('/my-orders/:customerId', async (req, res) => {
     try {
         const orders = await Order.find({ customer: req.params.customerId })
-                                  .populate('seed') 
-                                  .sort({ orderDate: -1 }); 
+            .populate('seed') 
+            .sort({ orderDate: -1 }); 
         res.json(orders);
     } catch (err) {
         res.status(500).json({ message: "Orders not loaded!" });

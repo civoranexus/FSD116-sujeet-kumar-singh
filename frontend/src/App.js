@@ -11,6 +11,7 @@ import Customer from './pages/Customer';
 import Home from './pages/Home';
 import Register from './pages/Register'; 
 import Orders from './pages/Orders';
+import Profile from './pages/Profile';
 
 function Layout() {
   const location = useLocation();
@@ -39,6 +40,7 @@ function Layout() {
           <Route path="/staff" element={<Staff />} />
           <Route path="/customer" element={<Customer />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
     </div>
