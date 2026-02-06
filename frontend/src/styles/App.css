@@ -326,3 +326,123 @@
 .btn-save-profile:hover {
     background-color: #1b5e20;
 }
+
+/* Procurement Page Container */
+.procurement-container {
+    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Card Style for Form */
+.procurement-form-card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+    border-top: 5px solid #2e7d32; /* Nursery Theme Green */
+}
+
+.procurement-form-card h3 {
+    margin-top: 0;
+    color: #2e7d32;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Grid Layout for Form Inputs */
+.procurement-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.proc-input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.proc-input:focus {
+    border-color: #2e7d32;
+    box-shadow: 0 0 5px rgba(46, 125, 50, 0.2);
+}
+
+/* Submit Button */
+.proc-btn {
+    background: #2e7d32;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.proc-btn:hover {
+    background: #1b5e20;
+    transform: translateY(-2px);
+}
+
+/* Table Design */
+.proc-table-container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.proc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.proc-table th {
+    background-color: #f8fdf9;
+    color: #2e7d32;
+    text-align: left;
+    padding: 15px;
+    border-bottom: 2px solid #e8f5e9;
+    font-weight: 600;
+}
+
+.proc-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 14px;
+    color: #444;
+}
+
+.proc-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Badge for Category */
+.category-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    background: #e8f5e9;
+    color: #2e7d32;
+    text-transform: uppercase;
+}
+
+/* Cost Column Styling */
+.cost-text {
+    font-weight: 600;
+    color: #1b5e20;
+}

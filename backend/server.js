@@ -22,7 +22,11 @@ mongoose.connect('mongodb://localhost:27017/nurseryDB')
         }
     });
 
+// --- ROUTES REGISTER ---
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/inventory', require('./routes/inventory'));
+
+// --- ADDED THIS LINE TO FIX 404 ERROR ---
+app.use('/api/procurement', require('./routes/procurement')); 
 
 app.listen(5000, () => console.log(`🚀 Server running on port 5000`));

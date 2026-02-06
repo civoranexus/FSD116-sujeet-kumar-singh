@@ -12,11 +12,12 @@ import Home from './pages/Home';
 import Register from './pages/Register'; 
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
+import ForgotPassword from './pages/ForgotPassword'; 
 
 function Layout() {
   const location = useLocation();
   
-  const noSidebarPages = ['/', '/login', '/register'];
+  const noSidebarPages = ['/', '/login', '/register', '/forgot-password'];
   const hideSidebar = noSidebarPages.includes(location.pathname);
 
   return (
@@ -33,6 +34,7 @@ function Layout() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/sales" element={<Sales />} />

@@ -1,78 +1,73 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import '../styles/App.css';
 
 const Register = () => {
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
+  const [emailExists, setEmailExists] = useState(false); // New state
   const [formData, setFormData] = useState({
-    name: '', email: '', mobile: '', password: '', otp: ''
+    name: '', email: '', mobile: '', address: '', pincode: '', password: ''
   });
   const navigate = useNavigate();
 
-  const handleSendOtp = async () => {
-    try {
-        const response = await axios.post('http://localhost:5000/api/auth/send-otp', { 
-            email: formData.email 
-        });
-        alert(response.data.message);
-        setStep(2);
-    } catch (err) {
-       
-        const errorMsg = err.response?.data?.message || "Internal Error.";
-        console.error("Full Error:", err);
-        alert(errorMsg);
-    }
-};
+  const handleNextStep = (e) => {
+    e.preventDefault();
+    setStep(2);
+  };
 
-  const handleVerifyOtp = () => {
-    
-    setStep(3);
-    };
-
-  const handleFinalRegister = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/auth/register', formData);
-      alert("Registration Successful! ✅");
-      navigate('/login');
+      const res = await axios.post('http://localhost:5000/api/auth/register', formData);
+      alert(res.data.message);
+      navigate('/login'); 
     } catch (err) {
-      alert("Error: " + err.response?.data?.message);
+      const msg = err.response?.data?.message || "";
+      if (msg.includes("registered")) {
+          setEmailExists(true); // Agar email registered hai to forgot link dikhao
+      }
+      alert(msg || "Registration Failed! ❌");
     }
   };
 
   return (
     <div className="register-full-page">
       <div className="register-card">
-        <h2 style={{ color: '#2e7d32' }}>New Account</h2>
+        <h2 style={{ color: '#2e7d32' }}>🌱 {step === 1 ? 'Customer Details' : 'Security Setup'}</h2>
         
-        <form onSubmit={handleFinalRegister} className="login-form">
-         
-          {step === 1 && (
-            <>
-              <input className="login-input" placeholder="Full Name" onChange={e => setFormData({...formData, name: e.target.value})} required />
-              <input className="login-input" placeholder="Email ID" type="email" onChange={e => setFormData({...formData, email: e.target.value})} required />
-              <input className="login-input" placeholder="Mobile Number" type="tel" onChange={e => setFormData({...formData, mobile: e.target.value})} required />
-              <button type="button" onClick={handleSendOtp} className="login-button">Verify Mobile/Email</button>
-            </>
-          )}
+        {step === 1 && (
+          <form onSubmit={handleNextStep} className="login-form">
+            <p style={{fontSize: '14px', color: '#666'}}>Please enter your delivery details</p>
+            <input className="login-input" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+            <input className="login-input" placeholder="Email ID" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
+            <input className="login-input" placeholder="Mobile Number" type="tel" maxLength="10" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} required />
+            <input className="login-input" placeholder="Full Address" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} required />
+            <input className="login-input" placeholder="Pincode" type="number" value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} required />
+            
+            <button type="submit" className="login-button">Next Step</button>
+            
+            {emailExists && (
+               <p style={{marginTop: '10px', color: 'red', fontSize: '13px'}}>
+                  Email already exists! <Link to="/forgot-password" style={{color: '#2e7d32', fontWeight: 'bold'}}>Forgot Password?</Link>
+               </p>
+            )}
+            
+            <p style={{marginTop: '15px'}}>Already have an account? <Link to="/login" style={{color: '#2e7d32'}}>Login</Link></p>
+          </form>
+        )}
 
-          {step === 2 && (
-            <>
-              <p>OTP send...</p>
-              <input className="login-input" placeholder="Enter 6-digit OTP" onChange={e => setFormData({...formData, otp: e.target.value})} required />
-              <button type="button" onClick={handleVerifyOtp} className="login-button" style={{background: '#ffa000'}}>Verify OTP</button>
-            </>
-          )}
-
-          {step === 3 && (
-            <>
-              <p style={{color: 'green'}}> Mobile Verified!</p>
-              <input className="login-input" type="password" placeholder="Create Strong Password" onChange={e => setFormData({...formData, password: e.target.value})} required />
-              <button type="submit" className="login-button">Complete Registration</button>
-            </>
-          )}
-        </form>
+        {step === 2 && (
+          <form onSubmit={handleRegister} className="login-form">
+            <p style={{fontSize: '14px', color: '#666'}}>Set a strong password for your ID: <b>{formData.email}</b></p>
+            <input 
+              className="login-input" type="password" placeholder="Create Strong Password" 
+              onChange={e => setFormData({...formData, password: e.target.value})} required autoFocus
+            />
+            <button type="submit" className="login-button">Create My Account</button>
+            <button type="button" onClick={() => setStep(1)} style={{background: 'none', border: 'none', color: '#666', marginTop: '10px', cursor: 'pointer'}}>Go Back</button>
+          </form>
+        )}
       </div>
     </div>
   );

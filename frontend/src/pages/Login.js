@@ -6,25 +6,22 @@ import '../styles/App.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('name');
+    localStorage.clear(); 
   }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      
       const res = await axios.post('http://localhost:5000/api/auth/login', { 
         email: email.trim(), 
         password: password 
       });
-
-      console.log("Server Response:", res.data);
 
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('role', res.data.role);
@@ -37,8 +34,9 @@ const Login = () => {
         window.location.href = '/customer'; 
       }
     } catch (err) {
-      console.error("Login Error:", err.response?.data);
       alert(err.response?.data?.message || "Invalid Email or Password!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,7 +46,7 @@ const Login = () => {
         <div className="login-header">
           <span style={{fontSize: '50px'}}>🌱</span>
           <h2>Nursery Portal</h2>
-          <p>Sign in to manage your garden</p>
+          <p>Welcome back! Please login to your account.</p>
         </div>
         
         <form onSubmit={handleLogin} className="login-form">
@@ -57,7 +55,7 @@ const Login = () => {
             <input 
               className="login-input" 
               type="email" 
-              placeholder="admin@test.com" 
+              placeholder="example@mail.com" 
               onChange={(e)=>setEmail(e.target.value)} 
               required 
             />
@@ -65,20 +63,40 @@ const Login = () => {
 
           <div className="input-group">
             <label>Password</label>
-            <input 
-              className="login-input" 
-              type="password" 
-              placeholder="••••••••" 
-              onChange={(e)=>setPassword(e.target.value)} 
-              required 
-            />
+            <div style={{ position: 'relative' }}>
+                <input 
+                  className="login-input" 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="••••••••" 
+                  onChange={(e)=>setPassword(e.target.value)} 
+                  required 
+                />
+                <span 
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ position: 'absolute', right: '10px', top: '12px', cursor: 'pointer', fontSize: '12px' }}
+                >
+                    {showPassword ? "HIDE" : "SHOW"}
+                </span>
+            </div>
           </div>
 
-          <button className="login-button" type="submit">Login Now</button>
+          {/* --- ADDED: FORGOT PASSWORD OPTION --- */}
+          <div style={{ textAlign: 'right', marginBottom: '20px', marginTop: '-10px' }}>
+            <Link 
+              to="/forgot-password" 
+              style={{ color: '#2e7d32', fontSize: '13px', textDecoration: 'none', fontWeight: '500' }}
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
+          <button className="login-button" type="submit" disabled={loading}>
+            {loading ? "Signing in..." : "Login Now"}
+          </button>
         </form>
 
         <div className="register-link-container">
-          <span>New here? </span>
+          <span>New user? </span>
           <Link to="/register" className="register-link">Create an Account</Link>
         </div>
       </div>
