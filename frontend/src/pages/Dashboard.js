@@ -1,128 +1,138 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../styles/App.css';
 
 const Dashboard = () => {
     const [seeds, setSeeds] = useState([]);
-    const [adminStats, setAdminStats] = useState({
-        totalRevenue: 0,
-        pendingOrders: 0
-    });
+    const [stats, setStats] = useState({ totalRevenue: 0, totalSales: 0 });
+    const [recentSales, setRecentSales] = useState([]);
+    const [dailySales, setDailySales] = useState({ count: 0, revenue: 0, sales: [] }); 
     
     const role = localStorage.getItem('role');
 
     useEffect(() => {
-        // 1.Seed list 
-        axios.get('http://localhost:5000/api/inventory')
-            .then(res => setSeeds(res.data))
-            .catch(err => console.log(err));
+        const fetchDashboardData = async () => {
+            try {
+                // 1. Inventory data (Hamesha call hoga)
+                const invRes = await axios.get('http://localhost:5000/api/inventory');
+                setSeeds(invRes.data);
 
-        // 2.  Admin/Staff
-        if (role === 'admin' || role === 'staff') {
-            axios.get('http://localhost:5000/api/inventory/admin-stats', {
-                headers: { role: localStorage.getItem('role') }
-            })
-            .then(res => {
-                setAdminStats({
-                    totalRevenue: res.data.totalRevenue,
-                    pendingOrders: res.data.pendingOrders
-                });
-            })
-            .catch(err => console.log("Stats fetch failed", err));
-        }
+                // 2. Admin/Staff Specific Data
+                if (role === 'admin' || role === 'staff') {
+                    // Saari API calls ek saath parallel mein
+                    const [statsRes, historyRes, dailyRes] = await Promise.all([
+                        axios.get('http://localhost:5000/api/sales/stats'),
+                        axios.get('http://localhost:5000/api/sales/history'),
+                        axios.get('http://localhost:5000/api/sales/daily-sales')
+                    ]);
+                    
+                    setStats(statsRes.data);
+                    setRecentSales(historyRes.data.slice(0, 5));
+                    setDailySales(dailyRes.data);
+                }
+            } catch (err) { 
+                console.error("Dashboard Data Fetch Error:", err); 
+            }
+        };
+        fetchDashboardData();
     }, [role]);
 
-    const totalVarieties = seeds.length;
-    const totalStock = seeds.reduce((sum, seed) => sum + seed.quantity, 0);
-    const lowStockItemsList = seeds.filter(seed => seed.quantity < 5);
-
     return (
-        <div style={{ padding: '30px' }}>
-            <h2 style={{ marginBottom: '20px', color: '#2e7d32' }}>🌱 Nursery Overview Dashboard</h2>
+        <div className="dashboard-container">
+            <h2 className="dashboard-title">🌱 Nursery Overview Dashboard</h2>
             
-            {/* General Stats (Visible to All or Admin) */}
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                <div style={cardStyle('#E3F2FD', '#1976D2')}>
-                    <h3>{totalVarieties}</h3>
+            {/* --- TOP STATS ROW --- */}
+            <div className="stats-row">
+                <div className="stat-card" style={{backgroundColor: '#E3F2FD', color: '#1976D2'}}>
+                    <h3>{seeds.length}</h3>
                     <p>Seed Varieties</p>
                 </div>
-
-                <div style={cardStyle('#F1F8E9', '#388E3C')}>
-                    <h3>{totalStock}</h3>
-                    <p>Total Stock</p>
-                </div>
-
                 
-                <div style={cardStyle('#FFEBEE', '#D32F2F')}>
-                    <h3>{lowStockItemsList.length}</h3>
+                {/* NEW: Daily Sales Card - Admin/Staff Only */}
+                {(role === 'admin' || role === 'staff') && (
+                    <div className="stat-card" style={{backgroundColor: '#FFF3E0', color: '#E65100'}}>
+                        <h3>₹{dailySales.revenue ? dailySales.revenue.toLocaleString() : 0}</h3>
+                        <p>Today's Sales ({dailySales.count || 0} orders)</p>
+                    </div>
+                )}
+
+                <div className="stat-card" style={{backgroundColor: '#F1F8E9', color: '#388E3C'}}>
+                    <h3>{seeds.reduce((s, i) => s + (i.quantity || 0), 0)}</h3>
+                    <p>Total Stock Units</p>
+                </div>
+                <div className="stat-card" style={{backgroundColor: '#FFEBEE', color: '#D32F2F'}}>
+                    <h3>{seeds.filter(s => s.quantity < 5).length}</h3>
                     <p>Low Stock Alerts</p>
                 </div>
             </div>
 
-            {/* --- ADMIN ONLY SECTION --- */}
+            {/* --- ADMIN REVENUE CARDS --- */}
             {(role === 'admin' || role === 'staff') && (
-                <div style={{ marginTop: '30px' }}>
-                    <h3 style={{ color: '#1565c0' }}>📊 Business Report </h3>
-                    <div style={{ display: 'flex', gap: '20px', marginTop: '15px' }}>
-                        <div style={cardStyle('#E8EAF6', '#283593')}>
-                            <h3 style={{ color: '#2e7d32' }}>₹{adminStats.totalRevenue}</h3>
-                            <p>Total Sales Revenue</p>
-                        </div>
-                        <div style={cardStyle('#FFF3E0', '#E65100')}>
-                            <h3>{adminStats.pendingOrders}</h3>
-                            <p>Pending Orders</p>
-                        </div>
+                <div className="admin-stats-grid">
+                    <div className="revenue-card">
+                        <h3>Total Sales Revenue</h3>
+                        <h1>₹{stats.totalRevenue ? stats.totalRevenue.toLocaleString() : 0}</h1>
+                    </div>
+                    <div className="order-card">
+                        <h3>Total Orders</h3>
+                        <h1>{stats.totalSales || 0}</h1>
                     </div>
                 </div>
             )}
 
-            {/* Stock Summary Section */}
-            <div style={{ marginTop: '40px' }}>
-                <h3>📦 Quick Stock Summary</h3>
-                <div style={{ background: '#fff', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
-                    {seeds.slice(0, 8).map(seed => (
-                        <div key={seed._id} style={{ 
-                            padding: '12px 20px', 
-                            borderBottom: '1px solid #eee',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
+            {/* --- TABLES SECTION --- */}
+            <div className="quick-summary-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                {/* Stock Summary */}
+                <div className="report-card">
+                    <h3>📦 Quick Stock Summary</h3>
+                    {seeds.slice(0, 5).map(seed => (
+                        <div key={seed._id} className="summary-list-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' }}>
                             <span>{seed.name}</span>
-                            <span>
-                                <strong style={{ color: seed.quantity < 5 ? '#D32F2F' : '#333' }}>
-                                    {seed.quantity} units
-                                </strong>
-                                {seed.quantity < 5 && (
-                                    <span style={{ 
-                                        marginLeft: '10px', 
-                                        padding: '2px 8px', 
-                                        background: '#FFEBEE', 
-                                        color: '#D32F2F', 
-                                        borderRadius: '5px',
-                                        fontSize: '12px'
-                                    }}>
-                                        ⚠️ Reorder
-                                    </span>
-                                )}
+                            <span className={seed.quantity < 5 ? 'low-stock-warning' : ''} style={{ color: seed.quantity < 5 ? 'red' : 'inherit', fontWeight: 'bold' }}>
+                                {seed.quantity} {seed.quantity < 5 ? '⚠️' : ''}
                             </span>
                         </div>
                     ))}
                 </div>
+
+                {/* Today's Sales Activity List (Added Here) */}
+                {(role === 'admin' || role === 'staff') && (
+                    <div className="report-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3>📅 Today's Sales List</h3>
+                            <span style={{ fontSize: '12px', color: '#2e7d32', fontWeight: 'bold' }}>
+                                ₹{dailySales.revenue ? dailySales.revenue.toLocaleString() : 0}
+                            </span>
+                        </div>
+                        <table className="proc-table" style={{ width: '100%', marginTop: '10px', fontSize: '12px' }}>
+                            <thead>
+                                <tr style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>
+                                    <th>Time</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dailySales.sales && dailySales.sales.length > 0 ? (
+                                    dailySales.sales.map(sale => (
+                                        <tr key={sale._id} style={{ borderBottom: '1px solid #eee' }}>
+                                            <td>{new Date(sale.saleDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                            <td>{sale.customerName}</td>
+                                            <td style={{ fontWeight: 'bold' }}>₹{sale.finalAmount}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="3" style={{ textAlign: 'center', padding: '10px', color: '#888' }}>No sales today yet.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
-
-// Dashboard Card Styling
-const cardStyle = (bgColor, textColor) => ({
-    background: bgColor,
-    color: textColor,
-    padding: '20px',
-    borderRadius: '15px',
-    minWidth: '180px',
-    textAlign: 'center',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-    border: `1px solid ${textColor}22`
-});
 
 export default Dashboard;
