@@ -5,9 +5,12 @@ const User = require('./models/User');
 require('dotenv').config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// --- MONGODB CONNECTION ---
 mongoose.connect('mongodb://localhost:27017/nurseryDB')
     .then(async () => {
         console.log("✅ MongoDB Connected...");
@@ -20,13 +23,23 @@ mongoose.connect('mongodb://localhost:27017/nurseryDB')
             ]);
             console.log("⭐ Default Users Created!");
         }
-    });
+    })
+    .catch(err => console.log("❌ MongoDB Connection Error:", err));
 
-// --- ROUTES REGISTER ---
+// --- ROUTES REGISTRATION ---
+// In sabhi files ka 'routes' folder mein hona zaroori hai
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/inventory', require('./routes/inventory'));
-
-// --- ADDED THIS LINE TO FIX 404 ERROR ---
 app.use('/api/procurement', require('./routes/procurement')); 
+app.use('/api/batches', require('./routes/batch'));
+app.use('/api/reports', require('./routes/reports'));
+app.use('/api/sales', require('./routes/sales'));
 
-app.listen(5000, () => console.log(`🚀 Server running on port 5000`));
+// --- 404 CATCH-ALL ROUTE ---
+app.use((req, res) => {
+    console.log(`⚠️ 404 Attempted on: ${req.url}`);
+    res.status(404).json({ message: "Backend Route Not Found - Check server.js" });
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

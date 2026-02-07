@@ -4,19 +4,18 @@ const Seed = require('../models/Seed');
 const Order = require('../models/Order');
 const User = require('../models/User'); 
 
+// --- ADMIN STATS ---
 router.get('/admin-stats', async (req, res) => {
     try {
-        
         const userRole = req.headers['role'];
         if (userRole !== 'admin' && userRole !== 'staff') {
-            return res.status(403).json({ message: "You are not acces the page!" });
+            return res.status(403).json({ message: "You are not authorized to access this page!" });
         }
 
         const orders = await Order.find();
         const seeds = await Seed.find();
 
-        const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
-        
+        const totalRevenue = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
         const pendingOrders = orders.filter(o => o.status === 'Pending').length;
 
         const lowStockItems = seeds.filter(s => s.quantity < 5).map(s => ({
@@ -32,11 +31,20 @@ router.get('/admin-stats', async (req, res) => {
             lowStockItems 
         });
     } catch (err) {
-        res.status(500).json({ message: "Error" });
+        res.status(500).json({ message: "Error loading admin stats" });
     }
 });
 
-// 1. Get all seeds
+// --- FIX 404: Get all seeds (Dono routes kaam karenge) ---
+router.get('/all', async (req, res) => {
+    try {
+        const seeds = await Seed.find();
+        res.json(seeds);
+    } catch (err) {
+        res.status(500).json({ message: "Data not load" });
+    }
+});
+
 router.get('/', async (req, res) => {
     try {
         const seeds = await Seed.find();
@@ -99,43 +107,30 @@ router.post('/place-order', async (req, res) => {
     }
 });
 
-// Get ALL Orders
+// --- ORDER MANAGEMENT ---
 router.get('/all-orders', async (req, res) => {
     try {
-        const orders = await Order.find()
-            .populate('seed')
-            .populate('customer', 'name email')
-            .sort({ orderDate: -1 });
+        const orders = await Order.find().populate('seed').populate('customer', 'name email').sort({ orderDate: -1 });
         res.json(orders);
     } catch (err) {
         res.status(500).json({ message: "All orders not loaded!" });
     }
 });
 
-// Update Order Status
 router.put('/update-status/:id', async (req, res) => {
     try {
         const { status } = req.body;
-        const updatedOrder = await Order.findByIdAndUpdate(
-            req.params.id, 
-            { status: status }, 
-            { new: true }
-        );
+        const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status: status }, { new: true });
         res.json(updatedOrder);
     } catch (err) {
         res.status(500).json({ message: "Status update failed" });
     }
 });
 
-// Update Address (Single Order)
 router.put('/update-address/:orderId', async (req, res) => {
     const { newAddress } = req.body;
     try {
-        const updatedOrder = await Order.findByIdAndUpdate(
-            req.params.orderId, 
-            { address: newAddress },
-            { new: true } 
-        );
+        const updatedOrder = await Order.findByIdAndUpdate(req.params.orderId, { address: newAddress }, { new: true });
         if (!updatedOrder) return res.status(404).json({ message: "Order not found!" });
         res.json({ message: "address change! ✅" });
     } catch (err) {
@@ -143,12 +138,9 @@ router.put('/update-address/:orderId', async (req, res) => {
     }
 });
 
-// My Orders
 router.get('/my-orders/:customerId', async (req, res) => {
     try {
-        const orders = await Order.find({ customer: req.params.customerId })
-            .populate('seed') 
-            .sort({ orderDate: -1 }); 
+        const orders = await Order.find({ customer: req.params.customerId }).populate('seed').sort({ orderDate: -1 }); 
         res.json(orders);
     } catch (err) {
         res.status(500).json({ message: "Orders not loaded!" });

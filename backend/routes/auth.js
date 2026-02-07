@@ -2,6 +2,16 @@ const router = require('express').Router();
 const User = require('../models/User');
 const Order = require('../models/Order'); 
 
+// --- NEW: GET ALL USERS (Fixes 404 /api/auth/users) ---
+router.get('/users', async (req, res) => {
+    try {
+        const users = await User.find().select('-password'); // Password ko chupa kar sabhi users bhejega
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: "Users load nahi ho paye" });
+    }
+});
+
 // --- LOGIN ---
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -40,7 +50,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// --- NEW: CHECK USER EXISTS (Forgot Password ke liye) ---
+// --- CHECK USER EXISTS ---
 router.post('/check-user', async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email.toLowerCase().trim() });
@@ -51,7 +61,7 @@ router.post('/check-user', async (req, res) => {
     }
 });
 
-// --- NEW: RESET PASSWORD ---
+// --- RESET PASSWORD ---
 router.put('/reset-password', async (req, res) => {
     const { email, newPassword } = req.body;
     try {
