@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../styles/App.css';
+import '../styles/App.css'; 
 
 const Inventory = () => {
     const [seeds, setSeeds] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
         name: '',
         category: '',
@@ -13,11 +14,14 @@ const Inventory = () => {
     });
 
     const fetchSeeds = async () => {
+        setLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/inventory');
+            const res = await axios.get('http://localhost:5000/api/inventory/all');
             setSeeds(res.data);
         } catch (err) {
-            console.error("Data not found:", err);
+            console.error("Inventory Fetch Error:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -34,67 +38,111 @@ const Inventory = () => {
         try {
             const res = await axios.post('http://localhost:5000/api/inventory/add', formData);
             if (res.status === 201) {
-                alert("Seed Successfully Added! ✅");
-                // FIX: Image ko bhi reset kar diya
+                alert("New Stock Successfully Added! ✅");
                 setFormData({ name: '', category: '', quantity: '', price: '', image: '' }); 
                 fetchSeeds(); 
             }
         } catch (err) {
-            alert("Seed not Add!" + (err.response?.data?.message || "Server Error"));
+            alert("Submission Failed: " + (err.response?.data?.message || "Internal Server Error"));
         }
     };
 
     return (
-        <div style={{ padding: '30px', fontFamily: 'Arial, sans-serif' }}>
-            <h2 style={{ color: '#2e7d32' }}>Nursery Inventory Management</h2>
+        <div className="inventory-wrapper">
+            <header className="inventory-header">
+                <h2>🌿 Nursery Inventory Dashboard</h2>
+                <p>Manage your seeds, stock levels, and pricing efficiently.</p>
+            </header>
 
-            <div style={{ background: '#f1f8e9', padding: '20px', borderRadius: '10px', marginBottom: '20px' }}>
-                <h3>Add New Seed Item</h3>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    <input name="name" placeholder="Seed Name" value={formData.name} onChange={handleChange} required style={inputStyle} />
-                    <input name="category" placeholder="Category" value={formData.category} onChange={handleChange} required style={inputStyle} />
-                    <input name="quantity" type="number" placeholder="Qty" value={formData.quantity} onChange={handleChange} required style={inputStyle} />
-                    <input name="price" type="number" placeholder="Price" value={formData.price} onChange={handleChange} required style={inputStyle} />
-                    <input 
-                        name="image" 
-                        placeholder="Image URL" 
-                        value={formData.image} 
-                        onChange={handleChange} 
-                        style={{ ...inputStyle, width: '250px' }} 
-                    />
-                    <button type="submit" style={buttonStyle}>Add Seed</button>
+            <section className="form-section card-shadow">
+                <div className="section-title">
+                    <span className="icon-badge">➕</span>
+                    <h3>Add New Inventory Item</h3>
+                </div>
+                <form onSubmit={handleSubmit} className="modern-form-grid">
+                    <div className="input-group">
+                        <label>Item Name</label>
+                        <input name="name" placeholder="Ex: Marigold Seeds" value={formData.name} onChange={handleChange} required />
+                    </div>
+                    <div className="input-group">
+                        <label>Category</label>
+                        <select name="category" value={formData.category} onChange={handleChange} required>
+                            <option value="">Select Category</option>
+                            <option value="Flowers">Flowers</option>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Tools">Tools</option>
+                        </select>
+                    </div>
+                    <div className="input-group">
+                        <label>Quantity</label>
+                        <input name="quantity" type="number" placeholder="00" value={formData.quantity} onChange={handleChange} required />
+                    </div>
+                    <div className="input-group">
+                        <label>Price (₹)</label>
+                        <input name="price" type="number" placeholder="₹ 0.00" value={formData.price} onChange={handleChange} required />
+                    </div>
+                    <div className="input-group full-width">
+                        <label>Image URL</label>
+                        <input name="image" placeholder="https://image-link.com/photo.jpg" value={formData.image} onChange={handleChange} />
+                    </div>
+                    <button type="submit" className="submit-btn">Register Item</button>
                 </form>
-            </div>
+            </section>
 
-            <table border="1" cellPadding="12" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead style={{ background: '#2e7d32', color: 'white' }}>
-                    <tr>
-                        <th>Image</th>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Quantity</th>
-                        <th>Price (₹)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {seeds.length > 0 ? seeds.map((seed) => (
-                        <tr key={seed._id}>
-                            <td>
-                                <img src={seed.image || "https://via.placeholder.com/50"} alt="seed" style={{width: '50px', height: '50px', objectFit: 'cover', borderRadius: '5px'}} />
-                            </td>
-                            <td>{seed.name}</td>
-                            <td>{seed.category}</td>
-                            <td>{seed.quantity}</td>
-                            <td>{seed.price}</td>
-                        </tr>
-                    )) : <tr><td colSpan="5" style={{ textAlign: 'center' }}>Data not found.</td></tr>}
-                </tbody>
-            </table>
+            <section className="table-section card-shadow">
+                <div className="section-title">
+                    <span className="icon-badge">📋</span>
+                    <h3>Current Stock Overview</h3>
+                </div>
+                
+                {loading ? (
+                    <div className="loader-text">Fetching Inventory Data...</div>
+                ) : (
+                    <div className="table-responsive">
+                        <table className="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Price</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {seeds.length > 0 ? seeds.map((seed) => (
+                                    <tr key={seed._id} className={seed.quantity < 10 ? 'row-warning' : ''}>
+                                        <td>
+                                            <div className="img-container">
+                                                <img src={seed.image || "https://via.placeholder.com/50"} alt="item" />
+                                            </div>
+                                        </td>
+                                        <td className="bold-text">{seed.name}</td>
+                                        <td><span className="tag-category">{seed.category}</span></td>
+                                        <td>
+                                            <div className={`status-pill ${seed.quantity < 10 ? 'pill-low' : 'pill-ok'}`}>
+                                                {seed.quantity} Units {seed.quantity < 10 && '⚠️'}
+                                            </div>
+                                        </td>
+                                        <td className="price-text">₹{seed.price}</td>
+                                        <td>
+                                            <button className="edit-icon-btn" title="Edit Item">✏️</button>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="6" className="empty-msg">No inventory records found. Add your first item above!</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
         </div>
     );
 };
-
-const inputStyle = { padding: '10px', borderRadius: '5px', border: '1px solid #ccc' };
-const buttonStyle = { padding: '10px 20px', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
 
 export default Inventory;

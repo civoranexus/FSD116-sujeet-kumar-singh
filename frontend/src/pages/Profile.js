@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/App.css';
 
 const Profile = () => {
-    const userId = localStorage.getItem('id') || localStorage.getItem('userId');
+    const userId = localStorage.getItem('userId'); 
     const location = useLocation(); 
     const navigate = useNavigate();
     
@@ -35,7 +35,7 @@ const Profile = () => {
                     setTotalOrders(res.data.orderCount || 0);
                 }
             } catch (err) {
-                console.log("Profile load error.");
+                console.error("Profile load error: Check Atlas connection.");
             }
         };
         fetchProfile();
@@ -44,10 +44,8 @@ const Profile = () => {
     const handleSaveProfile = async (e) => {
         e.preventDefault();
         try {
-            
             await axios.put(`http://localhost:5000/api/auth/update-profile/${userId}`, profileData);
 
-            
             if (targetOrderId) {
                 const fullAddressString = `${profileData.address}, Pincode: ${profileData.pincode}, Mobile: ${profileData.mobile}`;
                 
@@ -55,85 +53,89 @@ const Profile = () => {
                     newAddress: fullAddressString 
                 });
                 
-                alert("Order Address and Profile Updated Successfully! ✅");
+                alert("Delivery Address and Profile Updated Successfully! ✅");
                 navigate('/orders'); 
             } else {
-                alert("Profile Details Saved Successfully! ✅");
+                alert("Account Settings Saved Successfully! ✅");
             }
         } catch (err) {
-            alert("Update fail.");
+            alert(err.response?.data?.message || "Update process failed. Please try again.");
         }
     };
 
     return (
         <div className="profile-page-container">
-            <div className="profile-header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="profile-header-flex">
                 <h2 className="text-green">
-                    {targetOrderId ? 'Update Order Address' : '👤 My Profile'}
+                    {targetOrderId ? 'Update Shipping Destination' : '👤 Personal Profile'}
                 </h2>
-                <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '5px 15px', borderRadius: '20px', fontSize: '14px', fontWeight: 'bold' }}>
-                    Total Orders: {totalOrders}
+                <div className="order-badge">
+                    Total Purchases: {totalOrders}
                 </div>
             </div>
             
+            
+
             {targetOrderId && (
-                <div style={{ background: '#fff3e0', padding: '10px', borderRadius: '8px', marginBottom: '15px', border: '1px solid #ffe0b2', color: '#e65100', fontSize: '13px' }}>
-                    <strong>Note:</strong>  (ID: ${targetOrderId.slice(-6)})
+                <div className="alert-box-warning">
+                    <strong>Updating Address for Order ID:</strong> (Ending in...${targetOrderId.slice(-6)})
                 </div>
             )}
             
-            <p style={{fontSize: '14px', color: '#666', marginBottom: '20px'}}>
-                 Permanent delivery address .
+            <p className="sub-text">
+                Manage your primary delivery address and contact information for seamless order processing.
             </p>
             
             <form onSubmit={handleSaveProfile} className="custom-form profile-form">
                 <div className="form-group">
-                    <label>Full Name *</label>
+                    <label>Full Legal Name *</label>
                     <input 
                         type="text" 
                         className="login-input" 
                         value={profileData.name} 
                         onChange={(e) => setProfileData({...profileData, name: e.target.value})} 
                         required 
+                        placeholder="Enter your full name"
                     />
                 </div>
 
                 <div className="form-group">
-                    <label>Mobile Number *</label>
+                    <label>Contact Number *</label>
                     <input 
                         type="number" 
                         className="login-input" 
                         value={profileData.mobile} 
                         onChange={(e) => setProfileData({...profileData, mobile: e.target.value})} 
                         required 
+                        placeholder="10-digit mobile number"
                     />
                 </div>
 
                 <div className="form-group">
-                    <label>Pincode *</label>
+                    <label>Area Pincode *</label>
                     <input 
                         type="number" 
                         className="login-input" 
                         value={profileData.pincode} 
                         onChange={(e) => setProfileData({...profileData, pincode: e.target.value})} 
                         required 
+                        placeholder="e.g. 844101"
                     />
                 </div>
 
                 <div className="form-group">
-                    <label>Complete Delivery Address *</label>
+                    <label>Comprehensive Delivery Address *</label>
                     <textarea 
-                        className="login-input" 
-                        style={{height: '100px', paddingTop: '10px'}} 
+                        className="login-input text-area-input" 
                         value={profileData.address} 
                         onChange={(e) => setProfileData({...profileData, address: e.target.value})} 
                         required 
-                        placeholder="House No, Area, City, State..."
+                        placeholder="House Number, Street Name, Landmark, City, State..."
                     />
                 </div>
 
-                <button type="submit" className="btn-save-profile">
-                    {targetOrderId ? 'Update Order & Profile' : 'Save Delivery Details'}
+                <button type="submit" className="btn-primary">
+                    {targetOrderId ? 'Sync Address & Proceed' : 'Save Profile Changes'}
                 </button>
             </form>
         </div>

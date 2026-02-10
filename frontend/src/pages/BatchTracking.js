@@ -13,22 +13,28 @@ const BatchTracking = () => {
     useEffect(() => { fetchBatches(); }, []);
 
     const fetchBatches = async () => {
-        const res = await axios.get('http://localhost:5000/api/batches/all');
-        setBatches(res.data);
+        try {
+            const res = await axios.get('http://localhost:5000/api/batches/tracking-list');
+            setBatches(res.data);
+        } catch (err) {
+            console.error("Error fetching batches:", err);
+        }
     };
 
     const handleAddBatch = async (e) => {
         e.preventDefault();
-        await axios.post('http://localhost:5000/api/batches/add', formData);
-        alert("Batch Added! 🌱");
-        fetchBatches();
+        try {
+            await axios.post('http://localhost:5000/api/batches/add', formData);
+            alert("New Batch Added! 🌱");
+            fetchBatches();
+        } catch (err) {
+            alert("Error adding batch");
+        }
     };
 
     return (
         <div className="procurement-container">
             <h2 className="text-green">🌱 Batch Health & Life Cycle Tracking</h2>
-
-            {/* Quick Add Form */}
             <div className="procurement-form-card">
                 <form onSubmit={handleAddBatch} className="procurement-grid">
                     <input className="proc-input" placeholder="Batch ID (e.g. B-001)" onChange={e => setFormData({...formData, batchNumber: e.target.value})} required />
@@ -38,7 +44,6 @@ const BatchTracking = () => {
                 </form>
             </div>
 
-            {/* Batch Timeline Cards */}
             <div className="batch-list">
                 {batches.map(batch => (
                     <div key={batch._id} className="batch-card">
@@ -47,7 +52,10 @@ const BatchTracking = () => {
                             <span>📍 Location: {batch.location} | 📅 {new Date(batch.plantingDate).toLocaleDateString()}</span>
                         </div>
 
-                        {/* --- PROGRESS TIMELINE --- */}
+
+
+[Image of plant growth stages diagram]
+
                         <div className="timeline-wrapper">
                             {stages.map((stage, index) => {
                                 const currentIdx = stages.indexOf(batch.growthStatus);
@@ -61,8 +69,8 @@ const BatchTracking = () => {
                         </div>
                         
                         <div className="batch-actions">
-                            <span className={`condition-tag ${batch.condition.toLowerCase().replace(' ', '-')}`}>
-                                {batch.condition}
+                            <span className={`condition-tag ${batch.condition?.toLowerCase().replace(' ', '-') || 'healthy'}`}>
+                                {batch.condition || 'Healthy'}
                             </span>
                             <button className="proc-btn-sm">Update Status</button>
                         </div>

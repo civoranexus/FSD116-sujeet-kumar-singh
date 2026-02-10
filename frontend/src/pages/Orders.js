@@ -18,7 +18,7 @@ const Orders = () => {
             const res = await axios.get(url);
             setOrders(res.data);
         } catch (err) {
-            console.error("Orders not loaded", err);
+            console.error("Orders sync failed with Atlas database", err);
         }
     };
 
@@ -31,10 +31,10 @@ const Orders = () => {
             await axios.put(`http://localhost:5000/api/inventory/update-status/${orderId}`, { 
                 status: newStatus 
             });
-            alert(`Order status updated to ${newStatus} ✅`);
+            alert(`Order status updated to ${newStatus} successfully! ✅`);
             fetchOrders();
         } catch (err) {
-            alert("Status update failed!");
+            alert("Error updating order status in database.");
         }
     };
 
@@ -43,30 +43,39 @@ const Orders = () => {
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>Receipt - ${order._id}</title>
+                    <title>Invoice - ${order._id}</title>
                     <style>
-                        body { font-family: sans-serif; padding: 30px; line-height: 1.6; color: #333; }
-                        .receipt-card { border: 2px solid #2e7d32; padding: 25px; border-radius: 10px; }
-                        .header { text-align: center; color: #2e7d32; border-bottom: 2px solid #2e7d32; margin-bottom: 20px; }
-                        .meta { display: flex; justify-content: space-between; margin-top: 20px; font-size: 14px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
-                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-                        th { background-color: #f4f4f4; }
-                        .total { text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 15px; color: #2e7d32; }
+                        body { font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; }
+                        .invoice-box { border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); padding: 30px; border-radius: 10px; }
+                        .header { color: #2e7d32; border-bottom: 2px solid #2e7d32; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
+                        .details { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
+                        th { background-color: #f9f9f9; color: #2e7d32; }
+                        .total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 20px; color: #2e7d32; }
+                        .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
                     </style>
                 </head>
                 <body>
-                    <div class="receipt-card">
-                        <div class="header"><h1>🌱 Welcome to Nursery</h1><p>Order Receipt</p></div>
-                        <div class="meta">
-                            <div><strong>Delivery To:</strong><br>${order.customer?.name || 'Customer'}<br>${order.address}</div>
-                            <div><strong>Order ID:</strong> ${order._id}<br><strong>Date:</strong> ${new Date(order.orderDate).toLocaleDateString()}</div>
+                    <div class="invoice-box">
+                        <div class="header"><h1>Civora Nursery</h1><p>Official Purchase Invoice</p></div>
+                        <div class="details">
+                            <div><strong>Billed To:</strong><br>${order.customer?.name || 'Valued Customer'}<br>${order.address}</div>
+                            <div><strong>Order ID:</strong> ${order._id.substring(0, 8)}...<br><strong>Date:</strong> ${new Date(order.orderDate).toLocaleDateString()}</div>
                         </div>
                         <table>
-                            <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
-                            <tbody><tr><td>${order.seed?.name}</td><td>${order.quantity}</td><td>₹${order.totalPrice}</td></tr></tbody>
+                            <thead><tr><th>Item Description</th><th>Quantity</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td>${order.seed?.name || 'Seeds/Plants'}</td>
+                                    <td>${order.quantity}</td>
+                                    <td>₹${order.totalPrice / order.quantity}</td>
+                                    <td>₹${order.totalPrice}</td>
+                                </tr>
+                            </tbody>
                         </table>
-                        <div class="total">Grand Total: ₹${order.totalPrice}</div>
+                        <div class="total">Amount Paid: ₹${order.totalPrice}</div>
+                        <div class="footer">Thank you for shopping with Civora Nursery! Keep Growing.</div>
                     </div>
                     <script>window.onload = function() { window.print(); window.close(); }</script>
                 </body>
@@ -75,41 +84,41 @@ const Orders = () => {
         printWindow.document.close();
     };
 
-
     const handleEditAddress = (orderId, currentStatus) => {
         if (currentStatus !== 'Pending') {
-            alert("Sorry Address is not change.");
+            alert("This order is already being processed and the address cannot be changed.");
             return;
         }
-        
         navigate('/profile', { state: { targetOrderId: orderId } });
     };
 
     return (
         <div className="orders-page">
             <h2 className={role === 'customer' ? 'text-green' : 'text-blue'}>
-                {role === 'customer' ? '📦 My Orders' : '📋 Order Management'}
+                {role === 'customer' ? '📦 My Purchase History' : '📋 Order Management Systems'}
             </h2>
             
+            
+
             <div className="orders-container">
-                {orders.length === 0 ? <p>Abhi koi order nahi hai.</p> : (
+                {orders.length === 0 ? <p className="no-data">No orders found in the database.</p> : (
                     <table className="custom-table">
                         <thead className={role === 'customer' ? 'bg-green' : 'bg-blue'}>
                             <tr>
-                                <th>Seed Name</th>
-                                {role !== 'customer' && <th>Customer</th>}
-                                <th>Quantity</th>
-                                <th>Total Price</th>
-                                <th>Delivery Address</th>
+                                <th>Item Name</th>
+                                {role !== 'customer' && <th>Customer Name</th>}
+                                <th>Qty</th>
+                                <th>Total Bill</th>
+                                <th>Shipping Address</th>
                                 <th>Status</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {orders.map(order => (
                                 <tr key={order._id}>
-                                    <td>{order.seed?.name || "N/A"}</td>
-                                    {role !== 'customer' && <td>{order.customer?.name || "User"}</td>}
+                                    <td><strong>{order.seed?.name || "N/A"}</strong></td>
+                                    {role !== 'customer' && <td>{order.customer?.name || "Member"}</td>}
                                     <td>{order.quantity}</td>
                                     <td>₹{order.totalPrice}</td>
                                     <td className="address-cell">
@@ -118,14 +127,16 @@ const Orders = () => {
                                             <button 
                                                 onClick={() => handleEditAddress(order._id, order.status)} 
                                                 className="edit-link"
-                                                style={{marginTop: '5px', display: 'block'}}
+                                                style={{marginTop: '5px', display: 'block', border: 'none', background: 'none', color: '#2e7d32', cursor: 'pointer', fontSize: '12px'}}
                                             >
                                                 Edit Address
                                             </button>
                                         )}
                                     </td>
-                                    <td className={`status-text ${order.status.toLowerCase()}`}>
-                                        {order.status}
+                                    <td>
+                                        <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                            {order.status}
+                                        </span>
                                     </td>
                                     <td>
                                         <div className="action-stack">
@@ -138,9 +149,9 @@ const Orders = () => {
                                             )}
 
                                             {order.status !== 'Pending' ? (
-                                                <button onClick={() => handlePrintReceipt(order)} className="btn-receipt">📄 Receipt</button>
+                                                <button onClick={() => handlePrintReceipt(order)} className="btn-receipt">📄 Download Invoice</button>
                                             ) : (
-                                                role === 'customer' && <span className="order-date">{new Date(order.orderDate).toLocaleDateString()}</span>
+                                                role === 'customer' && <span className="order-date">Placed: {new Date(order.orderDate).toLocaleDateString()}</span>
                                             )}
                                         </div>
                                     </td>

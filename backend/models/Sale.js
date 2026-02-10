@@ -5,16 +5,32 @@ const saleSchema = new mongoose.Schema({
         type: String, 
         required: true, 
         unique: true,
-        default: () => `INV-${Date.now()}` // Automatic Unique Invoice Number
+        default: () => `CIV-INV-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`
     },
-    customerName: { type: String, required: true },
-    customerMobile: { type: String },
+    customerName: { 
+        type: String, 
+        required: true,
+        trim: true 
+    },
+    customerMobile: { 
+        type: String,
+        validate: {
+            validator: function(v) {
+                return /\d{10}/.test(v); 
+            },
+            message: props => `${props.value} is not a valid phone number!`
+        }
+    },
     items: [{
-        seedId: { type: mongoose.Schema.Types.ObjectId, ref: 'Seed' },
+        seedId: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Seed',
+            required: true 
+        },
         name: String,
-        quantity: Number,
-        price: Number,
-        total: Number
+        quantity: { type: Number, required: true, min: 1 },
+        price: { type: Number, required: true },
+        total: { type: Number, required: true }
     }],
     subTotal: { type: Number, required: true },
     tax: { type: Number, default: 0 },
@@ -22,10 +38,18 @@ const saleSchema = new mongoose.Schema({
     finalAmount: { type: Number, required: true },
     paymentMode: { 
         type: String, 
-        enum: ['Cash', 'Online', 'UPI'], 
+        enum: ['Cash', 'Online', 'UPI', 'Card'], 
         default: 'Cash' 
     },
     saleDate: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+saleSchema.pre('validate', function(next) {
+    if (this.items && this.items.length > 0) {
+        this.subTotal = this.items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+        this.finalAmount = (this.subTotal + this.tax) - this.discount;
+    }
+    next();
 });
 
 module.exports = mongoose.model('Sale', saleSchema);

@@ -2,149 +2,139 @@ const express = require('express');
 const router = express.Router();
 const Seed = require('../models/Seed');
 const Order = require('../models/Order');
-const User = require('../models/User'); 
+const User = require('../models/User');
+const Sale = require('../models/Sale');
 
-// --- ADMIN STATS ---
 router.get('/admin-stats', async (req, res) => {
     try {
-        const userRole = req.headers['role'];
-        if (userRole !== 'admin' && userRole !== 'staff') {
-            return res.status(403).json({ message: "You are not authorized to access this page!" });
-        }
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-        const orders = await Order.find();
-        const seeds = await Seed.find();
+        const [orders, seeds, sales] = await Promise.all([
+            Order.find().populate('customer', 'name'), 
+            Seed.find(),
+            Sale.find()
+        ]);
 
-        const totalRevenue = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-        const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+        const todayOrders = orders.filter(o => {
+            const d = new Date(o.orderDate || o.createdAt);
+            return d >= start && d <= end;
+        });
 
-        const lowStockItems = seeds.filter(s => s.quantity < 5).map(s => ({
-            name: s.name,
-            quantity: s.quantity
-        }));
+        const todaySalesEntries = sales.filter(s => {
+            const d = new Date(s.saleDate);
+            return d >= start && d <= end;
+        });
+
+        const deliveredOrderRevenue = orders
+            .filter(o => o.status === 'Delivered')
+            .reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0);
+
+        const totalSaleRevenue = sales.reduce((sum, s) => sum + (Number(s.finalAmount) || 0), 0);
+
+        const todayRevenue = todayOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0) + 
+                             todaySalesEntries.reduce((sum, s) => sum + (Number(s.finalAmount) || 0), 0);
 
         res.json({
-            totalRevenue,
-            totalOrders: orders.length,
-            pendingOrders,
-            lowStockCount: lowStockItems.length,
-            lowStockItems 
+            totalRevenue: deliveredOrderRevenue + totalSaleRevenue, 
+            totalOrders: orders.length + sales.length,
+            pendingOrders: orders.filter(o => o.status === 'Pending').length,
+            lowStockCount: seeds.filter(s => s.quantity < 5).length,
+            dailySales: {
+                count: todayOrders.length + todaySalesEntries.length,
+                revenue: todayRevenue,
+                sales: [...todayOrders.map(o => ({
+                    _id: o._id,
+                    customerName: o.customerName || o.customer?.name || "Customer", 
+                    finalAmount: o.totalPrice,
+                    saleDate: o.orderDate || o.createdAt
+                })), ...todaySalesEntries]
+            }
         });
     } catch (err) {
-        res.status(500).json({ message: "Error loading admin stats" });
+        console.error("Dashboard Stats Error:", err);
+        res.status(500).json({ message: "Analytics failed to load." });
     }
 });
 
-// --- FIX 404: Get all seeds (Dono routes kaam karenge) ---
 router.get('/all', async (req, res) => {
     try {
-        const seeds = await Seed.find();
+        const seeds = await Seed.find().sort({ createdAt: -1 });
         res.json(seeds);
     } catch (err) {
-        res.status(500).json({ message: "Data not load" });
+        res.status(500).json({ message: "Failed to fetch inventory." });
     }
 });
 
-router.get('/', async (req, res) => {
-    try {
-        const seeds = await Seed.find();
-        res.json(seeds);
-    } catch (err) {
-        res.status(500).json({ message: "Data not load" });
-    }
-});
-
-// 2. Add new seed
-router.post('/add', async (req, res) => {
-    try {
-        const { name, category, quantity, price } = req.body;
-        const newSeed = new Seed({
-            name,
-            category,
-            quantity: Number(quantity),
-            price: Number(price)
-        });
-        await newSeed.save();
-        res.status(201).json(newSeed);
-    } catch (err) {
-        res.status(400).json({ message: "Error: " + err.message });
-    }
-});
-
-// 3. Place Order 
 router.post('/place-order', async (req, res) => {
     const { customerId, seedId, quantity, totalPrice } = req.body;
     try {
         const user = await User.findById(customerId);
-        if (!user || !user.address || !user.mobile || !user.pincode) {
-            return res.status(400).json({ 
-                message: "Please complete your Profile (Mobile, Pincode, Address) first! 👤" 
-            });
-        }
+        if (!user) return res.status(404).json({ message: "User not found" });
 
         const seed = await Seed.findById(seedId);
         if (!seed || seed.quantity < quantity) {
-            return res.status(400).json({ message: "Stock low!" });
+            return res.status(400).json({ message: "Stock Alert: Insufficient inventory quantity." });
         }
-
-        const fullAddress = `${user.address}, Pincode: ${user.pincode}, Mobile: ${user.mobile}`;
-
+        
         const newOrder = new Order({
             customer: customerId,
+            customerName: user.name || "New Customer", 
             seed: seedId,
-            quantity,
-            totalPrice,
-            address: fullAddress 
+            quantity: Number(quantity),
+            totalPrice: Number(totalPrice),
+            address: `${user.address || 'Address not provided'}, Mobile: ${user.mobile || 'N/A'}` 
         });
 
         await newOrder.save();
-        seed.quantity -= quantity;
+
+        seed.quantity -= Number(quantity);
         await seed.save();
 
-        res.status(201).json({ message: "Order Placed Successfully! 📦" });
-    } catch (err) {
-        res.status(500).json({ message: "Server Error: Order not save! " });
+        res.status(201).json({ message: "Order processed successfully! 📦" });
+    } catch (err) { 
+        console.error("Order Placement Error:", err);
+        res.status(500).json({ message: "Transaction Error: " + err.message }); 
     }
 });
 
-// --- ORDER MANAGEMENT ---
-router.get('/all-orders', async (req, res) => {
+router.put('/update-customer-name/:orderId', async (req, res) => {
     try {
-        const orders = await Order.find().populate('seed').populate('customer', 'name email').sort({ orderDate: -1 });
-        res.json(orders);
+        const { newName } = req.body;
+        await Order.findByIdAndUpdate(req.params.orderId, { $set: { customerName: newName } });
+        res.json({ message: "Customer name updated for this order!" });
     } catch (err) {
-        res.status(500).json({ message: "All orders not loaded!" });
+        res.status(500).json({ message: "Update failed." });
     }
 });
 
-router.put('/update-status/:id', async (req, res) => {
-    try {
-        const { status } = req.body;
-        const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status: status }, { new: true });
-        res.json(updatedOrder);
-    } catch (err) {
-        res.status(500).json({ message: "Status update failed" });
-    }
+router.put('/update-status/:orderId', async (req, res) => {
+    try { 
+        await Order.findByIdAndUpdate(req.params.orderId, { $set: { status: req.body.status } }); 
+        res.json({ message: `Status updated to ${req.body.status}!` }); 
+    } catch (err) { res.status(500).json({ message: "Status update failed." }); }
 });
 
 router.put('/update-address/:orderId', async (req, res) => {
-    const { newAddress } = req.body;
-    try {
-        const updatedOrder = await Order.findByIdAndUpdate(req.params.orderId, { address: newAddress }, { new: true });
-        if (!updatedOrder) return res.status(404).json({ message: "Order not found!" });
-        res.json({ message: "address change! ✅" });
-    } catch (err) {
-        res.status(500).send({ message: "Update fail: " + err.message });
-    }
+    try { await Order.findByIdAndUpdate(req.params.orderId, { $set: { address: req.body.newAddress } }); res.json({ message: "Address updated!" }); } catch (err) { res.status(500).json({ message: "Error" }); }
 });
 
-router.get('/my-orders/:customerId', async (req, res) => {
+router.get('/my-orders/:userId', async (req, res) => {
+    try { const orders = await Order.find({ customer: req.params.userId }).populate('seed', 'name price image').sort({ orderDate: -1 }); res.json(orders); } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+router.get('/all-orders', async (req, res) => {
+    try { const orders = await Order.find().populate('seed', 'name price category').populate('customer', 'name email mobile').sort({ orderDate: -1 }); res.json(orders); } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+router.post('/add', async (req, res) => {
+    const { name, category, quantity, price, image, description } = req.body;
     try {
-        const orders = await Order.find({ customer: req.params.customerId }).populate('seed').sort({ orderDate: -1 }); 
-        res.json(orders);
-    } catch (err) {
-        res.status(500).json({ message: "Orders not loaded!" });
-    }
+        const newSeed = new Seed({ name, category, quantity: Number(quantity), price: Number(price), image, description });
+        await newSeed.save();
+        res.status(201).json({ message: "Item added! 🌱" });
+    } catch (err) { res.status(500).json({ message: "Add failed." }); }
 });
 
 module.exports = router;

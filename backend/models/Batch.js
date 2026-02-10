@@ -1,9 +1,21 @@
 const mongoose = require('mongoose');
 
 const batchSchema = new mongoose.Schema({
-    batchNumber: { type: String, required: true, unique: true },
-    seedId: { type: mongoose.Schema.Types.ObjectId, ref: 'Seed' },
-    plantingDate: { type: Date, default: Date.now },
+    batchNumber: { 
+        type: String, 
+        required: true, 
+        unique: true,
+        trim: true 
+    },
+    seedId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Seed',
+        required: true 
+    },
+    plantingDate: { 
+        type: Date, 
+        default: Date.now 
+    },
     currentStage: { 
         type: String, 
         enum: ['Sowing', 'Germination', 'Seedling', 'Vegetative', 'Ready for Sale'],
@@ -18,9 +30,11 @@ const batchSchema = new mongoose.Schema({
         updateDate: { type: Date, default: Date.now },
         observation: String,
         height: String,
-        actionTaken: String // e.g., "Fertilized", "Pesticide applied"
+        actionTaken: String 
     }],
-    isReady: { type: Boolean, default: false }
-});
-
+    isReady: { 
+        type: Boolean, 
+        default: false 
+    }
+}, { timestamps: true }); 
 module.exports = mongoose.model('Batch', batchSchema);

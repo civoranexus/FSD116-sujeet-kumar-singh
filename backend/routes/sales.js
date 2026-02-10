@@ -2,23 +2,23 @@ const router = require('express').Router();
 const Sale = require('../models/Sale');
 const Seed = require('../models/Seed');
 
-// --- 1. POST: CREATE NEW SALE & UPDATE STOCK ---
 router.post('/create', async (req, res) => {
     const { customerName, customerMobile, items, subTotal, tax, discount, finalAmount, paymentMode } = req.body;
 
     try {
         if (!items || items.length === 0) {
-            return res.status(400).json({ message: "No items in the cart" });
+            return res.status(400).json({ message: "Cart is empty. Please add items." });
         }
 
-        // Stock checking and deduction loop
         for (let item of items) {
             const seed = await Seed.findById(item.seedId);
             if (!seed) {
-                return res.status(404).json({ message: `Item ${item.name} not found in inventory` });
+                return res.status(404).json({ message: `Product ${item.name} not found in inventory.` });
             }
-            if (seed.quantity < item.quantity) { // Check field name 'quantity' or 'stock' based on your model
-                return res.status(400).json({ message: `Insufficient stock for ${seed.name}. Available: ${seed.quantity}` });
+            if (seed.quantity < item.quantity) {
+                return res.status(400).json({ 
+                    message: `Insufficient stock for ${seed.name}. Available: ${seed.quantity}` 
+                });
             }
             
             seed.quantity -= Number(item.quantity);
@@ -36,33 +36,32 @@ router.post('/create', async (req, res) => {
             subTotal,
             tax,
             discount,
-            finalAmount,
+            finalAmount: Number(finalAmount), 
             paymentMode,
-            saleDate: new Date() // Explicitly setting current date
+            saleDate: new Date() 
         });
 
         await newSale.save();
         res.status(201).json({ 
-            message: "Sale successful and stock updated! 🧾", 
+            message: "Sale processed successfully! 🧾", 
             sale: newSale 
         });
 
     } catch (err) {
-        res.status(500).json({ message: "Sale failed: " + err.message });
+        console.error("Sale Processing Error:", err);
+        res.status(500).json({ message: "Transaction failed: " + err.message });
     }
 });
 
-// --- 2. GET: ALL SALES HISTORY ---
 router.get('/history', async (req, res) => {
     try {
         const history = await Sale.find().sort({ saleDate: -1 }).limit(50);
         res.json(history);
     } catch (err) {
-        res.status(500).json({ message: "Error fetching history" });
+        res.status(500).json({ message: "Failed to fetch sales history." });
     }
 });
 
-// --- 3. GET: SALES STATS (For Total Revenue) ---
 router.get('/stats', async (req, res) => {
     try {
         const stats = await Sale.aggregate([
@@ -75,13 +74,12 @@ router.get('/stats', async (req, res) => {
                 }
             }
         ]);
-        res.json(stats[0] || { totalRevenue: 0, totalSales: 0 });
+        res.json(stats[0] || { totalRevenue: 0, totalSales: 0, avgOrderValue: 0 });
     } catch (err) {
-        res.status(500).json({ message: "Error fetching stats" });
+        res.status(500).json({ message: "Failed to calculate sales statistics." });
     }
 });
 
-// --- 4. GET: DAILY SALES FOR ADMIN (Today's List) ---
 router.get('/daily-sales', async (req, res) => {
     try {
         const today = new Date();
@@ -92,7 +90,7 @@ router.get('/daily-sales', async (req, res) => {
             saleDate: { $gte: startOfToday, $lte: endOfToday }
         }).sort({ saleDate: -1 });
 
-        const totalTodayRevenue = todaySales.reduce((sum, sale) => sum + (sale.finalAmount || 0), 0);
+        const totalTodayRevenue = todaySales.reduce((sum, sale) => sum + (Number(sale.finalAmount) || 0), 0);
 
         res.json({
             count: todaySales.length,
@@ -100,8 +98,17 @@ router.get('/daily-sales', async (req, res) => {
             sales: todaySales
         });
     } catch (err) {
-        console.error("Daily Sales Error:", err);
-        res.status(500).json({ message: "Daily sales fetch failed" });
+        res.status(500).json({ message: "Daily sales record retrieval failed." });
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const sale = await Sale.findByIdAndDelete(req.params.id);
+        if (!sale) return res.status(404).json({ message: "Sale record not found" });
+        res.json({ message: "Transaction record deleted successfully." });
+    } catch (err) {
+        res.status(500).json({ message: "Delete operation failed." });
     }
 });
 

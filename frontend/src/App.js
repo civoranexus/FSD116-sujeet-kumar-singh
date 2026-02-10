@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -13,6 +13,15 @@ import Register from './pages/Register';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import ForgotPassword from './pages/ForgotPassword'; 
+import './styles/App.css';;
+
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 function Layout() {
   const location = useLocation();
@@ -21,28 +30,23 @@ function Layout() {
   const hideSidebar = noSidebarPages.includes(location.pathname);
 
   return (
-    <div style={{ display: 'flex' }}>
+    <div className="app-main-layout">
       {!hideSidebar && <Sidebar />}
       
-      <div style={{ 
-        marginLeft: hideSidebar ? '0' : '250px', 
-        width: '100%',
-        minHeight: '100vh',
-        background: '#f4f7f6'
-      }}>
+      <div className={hideSidebar ? "content-full" : "content-with-sidebar"}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/sales" element={<Sales />} />
-          <Route path="/procurement" element={<Procurement />} />
-          <Route path="/staff" element={<Staff />} />
-          <Route path="/customer" element={<Customer />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
+          <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
+          <Route path="/procurement" element={<ProtectedRoute><Procurement /></ProtectedRoute>} />
+          <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
+          <Route path="/customer" element={<ProtectedRoute><Customer /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
       </div>
     </div>

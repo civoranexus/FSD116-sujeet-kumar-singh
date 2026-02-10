@@ -10,20 +10,21 @@ const Staff = () => {
         try {
             const res = await axios.get('http://localhost:5000/api/auth/users');
             setUsers(res.data);
-        } catch (err) { console.log(err); }
+        } catch (err) { 
+            console.error("Database Connection Error:", err); 
+        }
     };
 
     useEffect(() => { fetchUsers(); }, []);
 
-    // --- REMOVE STAFF LOGIC ---
     const handleRemoveStaff = async (id) => {
-        if (window.confirm("Kya aap wakayi is staff ko nikalna chahte hain?")) {
+        if (window.confirm("Are you sure you want to remove this staff member from the system?")) {
             try {
                 await axios.delete(`http://localhost:5000/api/auth/delete-staff/${id}`);
-                alert("Staff Removed! ✅");
+                alert("Staff Access Revoked Successfully! ✅");
                 fetchUsers(); 
             } catch (err) {
-                alert(err.response?.data?.message || "Error removing staff");
+                alert(err.response?.data?.message || "Internal server error while removing staff.");
             }
         }
     };
@@ -32,60 +33,63 @@ const Staff = () => {
         e.preventDefault();
         try {
             await axios.post('http://localhost:5000/api/auth/add-staff', formData);
-            alert("Staff Added!");
+            alert("New Staff Member Registered! 🌱");
             setFormData({ name: '', email: '', password: '', mobile: '' });
             fetchUsers();
         } catch (err) {
-            alert(err.response?.data?.message || "Error adding staff");
+            alert(err.response?.data?.message || "Registration failed. Check if email already exists.");
         }
     };
 
     return (
-        <div style={{ padding: '30px' }}>
-            <h2 style={{ color: '#2e7d32' }}>👥 Staff Management</h2>
+        <div className="staff-management-container" style={{ padding: '30px' }}>
+            <h2 className="text-green">👥 Human Resource & Staff Management</h2>
 
-            <div style={{ background: '#e8f5e9', padding: '20px', borderRadius: '10px', marginBottom: '30px' }}>
-                <h3>Add New Staff Member</h3>
-                <form onSubmit={handleAddStaff} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <input className="login-input" style={{width: '200px'}} placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
-                    <input className="login-input" style={{width: '200px'}} placeholder="Email" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
-                    <input className="login-input" style={{width: '200px'}} placeholder="Password" type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required />
-                    <input className="login-input" style={{width: '200px'}} placeholder="Mobile" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} />
-                    <button className="login-button" style={{width: '150px'}} type="submit">Add Staff</button>
+            <div className="form-card" style={{ background: '#e8f5e9', padding: '25px', borderRadius: '12px', marginBottom: '30px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
+                <h3>➕ Onboard New Staff</h3>
+                <form onSubmit={handleAddStaff} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '15px' }}>
+                    <input className="login-input" style={{flex: '1', minWidth: '200px'}} placeholder="Full Legal Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+                    <input className="login-input" style={{flex: '1', minWidth: '200px'}} placeholder="Corporate Email" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
+                    <input className="login-input" style={{flex: '1', minWidth: '200px'}} placeholder="Secure Password" type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required />
+                    <input className="login-input" style={{flex: '1', minWidth: '200px'}} placeholder="Contact Number" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} />
+                    <button className="btn-primary" style={{width: '180px', height: '45px'}} type="submit">Register Staff</button>
                 </form>
             </div>
 
-            <table border="1" cellPadding="12" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead style={{ background: '#2e7d32', color: 'white' }}>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map(u => (
-                        <tr key={u._id}>
-                            <td>{u.name}</td>
-                            <td>{u.email}</td>
-                            <td><span className="role-badge">{u.role}</span></td>
-                            <td>
-                                {u.role !== 'admin' ? (
-                                    <button 
-                                        onClick={() => handleRemoveStaff(u._id)}
-                                        style={{ background: '#ff1744', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}
-                                    >
-                                        Remove 🗑️
-                                    </button>
-                                ) : (
-                                    <span style={{ color: '#888', fontSize: '12px' }}>Protected</span>
-                                )}
-                            </td>
+            <div className="table-container">
+                <table className="custom-table" style={{ width: '100%', borderCollapse: 'collapse', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+                    <thead style={{ background: '#2e7d32', color: 'white' }}>
+                        <tr>
+                            <th style={{padding: '15px', textAlign: 'left'}}>Full Name</th>
+                            <th style={{padding: '15px', textAlign: 'left'}}>Email Address</th>
+                            <th style={{padding: '15px', textAlign: 'left'}}>System Role</th>
+                            <th style={{padding: '15px', textAlign: 'center'}}>Access Control</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {users.map(u => (
+                            <tr key={u._id} style={{borderBottom: '1px solid #eee'}}>
+                                <td style={{padding: '12px'}}>{u.name}</td>
+                                <td style={{padding: '12px'}}>{u.email}</td>
+                                <td style={{padding: '12px'}}><span className={`role-badge ${u.role}`}>{u.role.toUpperCase()}</span></td>
+                                <td style={{padding: '12px', textAlign: 'center'}}>
+                                    {u.role !== 'admin' ? (
+                                        <button 
+                                            onClick={() => handleRemoveStaff(u._id)}
+                                            className="btn-remove"
+                                            style={{ background: '#ff1744', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                        >
+                                            Deactivate 🗑️
+                                        </button>
+                                    ) : (
+                                        <span style={{ color: '#888', fontStyle: 'italic', fontSize: '13px' }}>Administrative Lock 🔒</span>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

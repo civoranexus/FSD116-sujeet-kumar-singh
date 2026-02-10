@@ -1,52 +1,54 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/App.css';
+import '../styles/App.css'; 
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif' }}>
-      {/* 🌿 Hero Section */}
-      <div style={{ 
-        height: '60vh', 
-        background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?ixlib=rb-4.0.3")', 
-        backgroundSize: 'cover', 
-        backgroundPosition: 'center',
-        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white' 
-      }}>
-        <h1 style={{ fontSize: '3rem', marginBottom: '10px' }}>Grow Your Own Garden</h1>
-        <p style={{ fontSize: '1.2rem', marginBottom: '20px' }}>Premium Quality Seeds for Every Season</p>
-        <button 
-          onClick={() => navigate('/login')} 
-          style={{ padding: '12px 30px', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '30px', fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}
-        >
-          Login to Shop Now
-        </button>
+    <div className="home-wrapper">
+      <div className="home-hero">
+        <h1>Civora Nursery & Seeds</h1>
+        <p>
+          Providing Premium Quality Organic Seeds and Plant Management Solutions for a Greener Tomorrow.
+        </p>
+        
+        <div className="hero-btn-group">
+          <button onClick={() => navigate('/login')} className="btn-primary">
+            Sign In to Shop
+          </button>
+          <button onClick={() => navigate('/register')} className="btn-secondary">
+            Join Us Today
+          </button>
+        </div>
       </div>
 
-      {/* 🌱 About Seeds Section */}
-      <div style={{ padding: '50px 20px', textAlign: 'center', background: 'white' }}>
-        <h2 style={{ color: '#2e7d32' }}>Why Choose Our Seeds?</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px', marginTop: '30px' }}>
-          <div style={featureStyle}>
-            <h3>🌱 100% Organic</h3>
-            <p>Our seeds are natural and free from harmful chemicals.</p>
+      <div className="features-section">
+        <h2 className="text-green">Why Choose Civora Seeds?</h2>
+        <p>Our commitment to quality ensures the best growth for your garden.</p>
+        
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">🌱</div>
+            <h3>100% Certified Organic</h3>
+            <p>Our seeds are sourced naturally and are completely free from harmful pesticides.</p>
           </div>
-          <div style={featureStyle}>
-            <h3>📈 High Germination</h3>
-            <p>99% success rate in growing healthy plants.</p>
+          
+          <div className="feature-card">
+            <div className="feature-icon">📈</div>
+            <h3>High Germination Rate</h3>
+            <p>Rigorous quality testing ensures a 99% success rate in sprouting healthy plants.</p>
           </div>
-          <div style={featureStyle}>
-            <h3>🚚 Fast Delivery</h3>
-            <p>Get your seeds delivered to your doorstep in 3-5 days.</p>
+          
+          <div className="feature-card">
+            <div className="feature-icon">🚚</div>
+            <h3>Nationwide Delivery</h3>
+            <p>Reliable logistics to get your premium seeds delivered within 3-5 business days.</p>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-const featureStyle = { padding: '20px', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', background: '#f9f9f9' };
 
 export default Home;

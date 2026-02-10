@@ -2,23 +2,34 @@ const router = require('express').Router();
 const Sale = require('../models/Sale');
 const Seed = require('../models/Seed');
 
-// --- 1. GET: INVENTORY VALUATION ---
 router.get('/inventory-valuation', async (req, res) => {
     try {
         const seeds = await Seed.find();
+        
         const totalValuation = seeds.reduce((sum, seed) => sum + (seed.quantity * seed.price), 0);
         
         const categoryWise = await Seed.aggregate([
-            { $group: { _id: "$category", totalValue: { $sum: { $multiply: ["$price", "$quantity"] } }, stock: { $sum: "$quantity" } } }
+            { 
+                $group: { 
+                    _id: "$category", 
+                    totalValue: { $sum: { $multiply: ["$price", "$quantity"] } }, 
+                    stock: { $sum: "$quantity" } 
+                } 
+            },
+            { $sort: { totalValue: -1 } } 
         ]);
 
-        res.json({ totalValuation, categoryWise });
+        res.json({ 
+            totalValuation, 
+            categoryWise,
+            message: "Inventory valuation calculated successfully" 
+        });
     } catch (err) {
-        res.status(500).json({ message: "Valuation error" });
+        console.error("Valuation Error:", err);
+        res.status(500).json({ message: "Failed to calculate inventory valuation" });
     }
 });
 
-// --- 2. GET: SALES ANALYTICS (Monthly) ---
 router.get('/sales-analytics', async (req, res) => {
     try {
         const monthlyData = await Sale.aggregate([
@@ -29,11 +40,16 @@ router.get('/sales-analytics', async (req, res) => {
                     orderCount: { $sum: 1 }
                 }
             },
-            { $sort: { "_id": 1 } }
+            { $sort: { "_id": 1 } } 
         ]);
-        res.json(monthlyData);
+
+        res.json({
+            analytics: monthlyData,
+            message: "Monthly sales analytics retrieved successfully"
+        });
     } catch (err) {
-        res.status(500).json({ message: "Analytics error" });
+        console.error("Analytics Error:", err);
+        res.status(500).json({ message: "Failed to retrieve sales analytics" });
     }
 });
 

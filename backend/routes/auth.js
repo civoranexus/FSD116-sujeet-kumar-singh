@@ -1,74 +1,105 @@
 const router = require('express').Router();
 const User = require('../models/User');
 const Order = require('../models/Order'); 
+const bcrypt = require('bcryptjs'); 
+const jwt = require('jsonwebtoken'); 
 
-// --- NEW: GET ALL USERS (Fixes 404 /api/auth/users) ---
-router.get('/users', async (req, res) => {
-    try {
-        const users = await User.find().select('-password'); // Password ko chupa kar sabhi users bhejega
-        res.json(users);
-    } catch (err) {
-        res.status(500).json({ message: "Users load nahi ho paye" });
-    }
-});
-
-// --- LOGIN ---
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ email: email.toLowerCase().trim() });
-        if (user && user.password === password) {
-            res.json({ 
-                token: "fake-jwt-token", 
-                role: user.role, 
-                id: user._id,  
-                name: user.name 
-            });
-        } else {
-            res.status(400).json({ message: "Invalid email or password" });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(400).json({ message: "Authentication failed: Invalid credentials." });
         }
+
+        const token = jwt.sign({ id: user._id, role: user.role }, 'civora_secret_key', { expiresIn: '1d' });
+        res.json({ token, role: user.role, id: user._id, name: user.name });
     } catch (err) {
-        res.status(500).json({ message: "Server Error" });
+        res.status(500).json({ message: "Server error during authentication process." });
     }
 });
 
-// --- REGISTER ---
 router.post('/register', async (req, res) => {
     const { name, email, mobile, password, address, pincode } = req.body;
     try {
         const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
-        if (existingUser) return res.status(400).json({ message: "Email already registered! ⚠️" });
+        if (existingUser) return res.status(400).json({ message: "Identity conflict: Email already registered." });
 
-        const newUser = new User({
-            name, email: email.toLowerCase().trim(), password, mobile, address, pincode, role: 'customer'
-        });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ name, email: email.toLowerCase().trim(), password: hashedPassword, mobile, address, pincode, role: 'customer' });
 
         await newUser.save();
-        res.status(201).json({ message: "Account created successfully! 🎉" });
+        res.status(201).json({ message: "Account registered successfully! 🎉" });
     } catch (err) {
-        res.status(500).json({ message: "Registration failed: " + err.message });
+        res.status(500).json({ message: "System error during account creation." });
     }
 });
 
-// --- CHECK USER EXISTS ---
-router.post('/check-user', async (req, res) => {
+router.get('/users', async (req, res) => {
     try {
-        const user = await User.findOne({ email: req.body.email.toLowerCase().trim() });
-        if (user) return res.json({ exists: true });
-        res.status(404).json({ exists: false, message: "User not found!" });
+        const users = await User.find().select('-password').sort({ createdAt: -1 });
+        res.json(users);
     } catch (err) {
-        res.status(500).json({ message: "Error checking user" });
+        res.status(500).json({ message: "Failed to load user directory." });
     }
 });
 
-// --- RESET PASSWORD ---
-router.put('/reset-password', async (req, res) => {
-    const { email, newPassword } = req.body;
+router.post('/add-staff', async (req, res) => {
+    const { name, email, mobile, password } = req.body;
     try {
-        await User.findOneAndUpdate({ email: email.toLowerCase().trim() }, { password: newPassword });
-        res.json({ message: "Password updated successfully! ✅" });
+        const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+        if (existingUser) return res.status(400).json({ message: "Conflict: Email already exists." });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newStaff = new User({ 
+            name, 
+            email: email.toLowerCase().trim(), 
+            password: hashedPassword, 
+            mobile, 
+            role: 'staff' 
+        });
+
+        await newStaff.save();
+        res.status(201).json({ message: "Staff member added successfully! 🌱" });
     } catch (err) {
-        res.status(500).json({ message: "Failed to reset password" });
+        res.status(500).json({ message: "Error while registering staff member." });
+    }
+});
+
+router.delete('/delete-staff/:id', async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: "Staff record removed successfully." });
+    } catch (err) {
+        res.status(500).json({ message: "Error deleting staff member." });
+    }
+});
+
+router.get('/user-profile/:userId', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId).select('-password');
+        if (!user) return res.status(404).json({ message: "Account settings not found." });
+
+        const orderCount = await Order.countDocuments({ customer: req.params.userId });
+        res.json({ user, orderCount });
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching profile information." });
+    }
+});
+
+router.put('/update-profile/:userId', async (req, res) => {
+    const { name, mobile, address, pincode } = req.body;
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            req.params.userId,
+            { $set: { name, mobile, address, pincode } },
+            { new: true, runValidators: true }
+        );
+        if (!updatedUser) return res.status(404).json({ message: "Update failed: User record not found." });
+
+        res.json({ message: "Profile updated successfully! ✅", user: updatedUser });
+    } catch (err) {
+        res.status(500).json({ message: "Server error while updating profile information." });
     }
 });
 
