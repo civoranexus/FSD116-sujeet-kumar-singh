@@ -12,8 +12,8 @@ const Orders = () => {
     const fetchOrders = async () => {
         try {
             const url = (role === 'admin' || role === 'staff') 
-                ? `http://localhost:5000/api/inventory/all-orders` 
-                : `http://localhost:5000/api/inventory/my-orders/${customerId}`;
+                ? `/api/inventory/all-orders` 
+                : `/api/inventory/my-orders/${customerId}`;
             
             const res = await axios.get(url);
             setOrders(res.data);
@@ -28,7 +28,7 @@ const Orders = () => {
 
     const handleUpdateStatus = async (orderId, newStatus) => {
         try {
-            await axios.put(`http://localhost:5000/api/inventory/update-status/${orderId}`, { 
+            await axios.put(`/api/inventory/update-status/${orderId}`, { 
                 status: newStatus 
             });
             alert(`Order status updated to ${newStatus} successfully! ✅`);

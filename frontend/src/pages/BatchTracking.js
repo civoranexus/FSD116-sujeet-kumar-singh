@@ -14,7 +14,7 @@ const BatchTracking = () => {
 
     const fetchBatches = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/batches/tracking-list');
+            const res = await axios.get('/api/batches/tracking-list');
             setBatches(res.data);
         } catch (err) {
             console.error("Error fetching batches:", err);
@@ -24,7 +24,7 @@ const BatchTracking = () => {
     const handleAddBatch = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/batches/add', formData);
+            await axios.post('/api/batches/add', formData);
             alert("New Batch Added! 🌱");
             fetchBatches();
         } catch (err) {

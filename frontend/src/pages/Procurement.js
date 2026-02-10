@@ -14,7 +14,7 @@ const Procurement = () => {
 
     const fetchRecords = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/procurement/all');
+            const res = await axios.get('/api/procurement/all');
             setRecords(res.data);
         } catch (err) {
             console.error("Database Connection Error:", err);
@@ -24,7 +24,7 @@ const Procurement = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/procurement/add', formData);
+            await axios.post('/api/procurement/add', formData);
             alert("New Inventory Stock Procured Successfully! 🌱");
             setFormData({ itemName: '', quantity: '', unitPrice: '', supplierName: '', category: 'Seed' });
             fetchRecords(); 

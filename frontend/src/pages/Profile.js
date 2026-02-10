@@ -23,7 +23,7 @@ const Profile = () => {
         const fetchProfile = async () => {
             if (!userId) return;
             try {
-                const res = await axios.get(`http://localhost:5000/api/auth/user-profile/${userId}`);
+                const res = await axios.get(`/api/auth/user-profile/${userId}`);
                 
                 if (res.data && res.data.user) {
                     setProfileData({
@@ -44,12 +44,12 @@ const Profile = () => {
     const handleSaveProfile = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/auth/update-profile/${userId}`, profileData);
+            await axios.put(`/api/auth/update-profile/${userId}`, profileData);
 
             if (targetOrderId) {
                 const fullAddressString = `${profileData.address}, Pincode: ${profileData.pincode}, Mobile: ${profileData.mobile}`;
                 
-                await axios.put(`http://localhost:5000/api/inventory/update-address/${targetOrderId}`, { 
+                await axios.put(`/api/inventory/update-address/${targetOrderId}`, { 
                     newAddress: fullAddressString 
                 });
                 

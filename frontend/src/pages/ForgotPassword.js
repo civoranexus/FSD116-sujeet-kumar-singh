@@ -12,7 +12,7 @@ const ForgotPassword = () => {
     const handleCheckEmail = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/auth/check-user', { email });
+            await axios.post('/api/auth/check-user', { email });
             setStep(2);
         } catch (err) {
             alert(err.response?.data?.message || "Registered email not found in our system.");
@@ -22,7 +22,7 @@ const ForgotPassword = () => {
     const handleReset = async (e) => {
         e.preventDefault();
         try {
-            await axios.put('http://localhost:5000/api/auth/reset-password', { email, newPassword });
+            await axios.put('/api/auth/reset-password', { email, newPassword });
             alert("Password successfully updated! ✅");
             navigate('/login');
         } catch (err) {

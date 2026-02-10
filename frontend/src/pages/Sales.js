@@ -12,7 +12,7 @@ const Sales = () => {
     const [sellQty, setSellQty] = useState(1);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/inventory/all')
+        axios.get('/api/inventory/all')
              .then(res => setSeeds(res.data))
              .catch(err => console.error("Database sync error", err));
     }, []);
@@ -86,7 +86,7 @@ const Sales = () => {
         };
 
         try {
-            await axios.post('http://localhost:5000/api/sales/create', saleData);
+            await axios.post('/api/sales/create', saleData);
             alert("Transaction Successful! Generating official invoice...");
             generateInvoice(saleData); 
             setCart([]);

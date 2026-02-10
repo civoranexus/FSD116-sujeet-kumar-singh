@@ -13,7 +13,7 @@ const LifeCycle = () => {
     });
 
     const fetchBatches = () => {
-        axios.get('http://localhost:5000/api/batches/tracking-list')
+        axios.get('/api/batches/tracking-list')
             .then(res => {
                 setBatches(res.data);
             })
@@ -31,7 +31,7 @@ const LifeCycle = () => {
         if (!selectedBatch) return alert("Please select a specific batch to update.");
         
         try {
-            await axios.put(`http://localhost:5000/api/batches/update-health/${selectedBatch}`, updateData);
+            await axios.put(`/api/batches/update-health/${selectedBatch}`, updateData);
             alert("Plant life-cycle records updated successfully! 🌱");
             fetchBatches();
         } catch (err) { 

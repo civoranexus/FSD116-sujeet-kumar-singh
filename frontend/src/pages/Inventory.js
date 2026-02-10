@@ -16,7 +16,7 @@ const Inventory = () => {
     const fetchSeeds = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/inventory/all');
+            const res = await axios.get('/api/inventory/all');
             setSeeds(res.data);
         } catch (err) {
             console.error("Inventory Fetch Error:", err);
@@ -36,7 +36,7 @@ const Inventory = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/inventory/add', formData);
+            const res = await axios.post('/api/inventory/add', formData);
             if (res.status === 201) {
                 alert("New Stock Successfully Added! ✅");
                 setFormData({ name: '', category: '', quantity: '', price: '', image: '' }); 

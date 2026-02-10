@@ -9,8 +9,8 @@ const Reports = () => {
     useEffect(() => {
         const fetchReports = async () => {
             try {
-                const valRes = await axios.get('http://localhost:5000/api/reports/inventory-valuation');
-                const anaRes = await axios.get('http://localhost:5000/api/reports/sales-analytics');
+                const valRes = await axios.get('/api/reports/inventory-valuation');
+                const anaRes = await axios.get('/api/reports/sales-analytics');
                 
                 setValuation(valRes.data || { totalValuation: 0, categoryWise: [] });
                 setAnalytics(anaRes.data || []);

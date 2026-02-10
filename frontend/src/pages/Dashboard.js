@@ -12,8 +12,8 @@ const Dashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 const [statsRes, invRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/inventory/admin-stats'),
-                    axios.get('http://localhost:5000/api/inventory/all')
+                    axios.get('/api/inventory/admin-stats'),
+                    axios.get('/api/inventory/all')
                 ]);
 
                 setStats({

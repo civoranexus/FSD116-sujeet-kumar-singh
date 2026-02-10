@@ -8,7 +8,7 @@ const Staff = () => {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/auth/users');
+            const res = await axios.get('/api/auth/users');
             setUsers(res.data);
         } catch (err) { 
             console.error("Database Connection Error:", err); 
@@ -20,7 +20,7 @@ const Staff = () => {
     const handleRemoveStaff = async (id) => {
         if (window.confirm("Are you sure you want to remove this staff member from the system?")) {
             try {
-                await axios.delete(`http://localhost:5000/api/auth/delete-staff/${id}`);
+                await axios.delete(`/api/auth/delete-staff/${id}`);
                 alert("Staff Access Revoked Successfully! ✅");
                 fetchUsers(); 
             } catch (err) {
@@ -32,7 +32,7 @@ const Staff = () => {
     const handleAddStaff = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/auth/add-staff', formData);
+            await axios.post('/api/auth/add-staff', formData);
             alert("New Staff Member Registered! 🌱");
             setFormData({ name: '', email: '', password: '', mobile: '' });
             fetchUsers();

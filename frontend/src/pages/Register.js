@@ -23,7 +23,7 @@ const Register = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/register', formData);
+            const res = await axios.post('/api/auth/register', formData);
             alert("Account Created Successfully! Welcome to Civora. 🌱");
             navigate('/login'); 
         } catch (err) {

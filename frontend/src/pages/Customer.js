@@ -16,7 +16,7 @@ const Customer = () => {
     }, [cart]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/inventory/all')
+        axios.get('/api/inventory/all')
             .then(res => setSeeds(res.data))
             .catch(err => console.log(err));
     }, []);
@@ -52,7 +52,7 @@ const Customer = () => {
         };
 
         try {
-            await axios.post('http://localhost:5000/api/inventory/place-order', orderData);
+            await axios.post('/api/inventory/place-order', orderData);
             alert(`Order placed successfully! ✅ Check 'My Purchase History' for updates.`);
             window.location.href = '/orders'; 
         } catch (err) {
@@ -75,7 +75,7 @@ const Customer = () => {
                     quantity: item.orderedQty,
                     totalPrice: item.price * item.orderedQty
                 };
-                await axios.post('http://localhost:5000/api/inventory/place-order', orderData);
+                await axios.post('/api/inventory/place-order', orderData);
             }
             alert("All items processed! Orders placed successfully! 📦");
             setCart([]); 
