@@ -141,5 +141,4 @@ vite.config.ts.timestamp-*
 .vite/
 
 node_modules/
-build/
 .env
