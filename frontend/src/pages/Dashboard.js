@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/App.css';
+import logo from '../assets/short_logo.png';
 
 const Dashboard = () => {
     const [seeds, setSeeds] = useState([]);
@@ -34,7 +35,14 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            <h2 className="dashboard-title">🌱 Civora Nursery Overview Dashboard</h2>
+            <h2 className="dashboard-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <img 
+                    src={logo} 
+                    alt="Civora Logo" 
+                    style={{ width: '40px', height: '40px', objectFit: 'contain' }} 
+                />
+                Civora Nursery Overview Dashboard
+            </h2>
             
             <div className="stats-row">
                 <div className="stat-card" style={{backgroundColor: '#E3F2FD', color: '#1976D2'}}>

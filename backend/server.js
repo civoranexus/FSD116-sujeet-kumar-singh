@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const bcrypt = require("bcryptjs"); // 👈 Ye add karna zaruri hai
+const bcrypt = require("bcryptjs"); 
 const path = require("path");
 const User = require("./models/User");
 require("dotenv").config();
@@ -50,7 +50,6 @@ app.use("/api/batches", require("./routes/batch"));
 app.use("/api/reports", require("./routes/reports"));
 app.use("/api/sales", require("./routes/sales"));
 
-// 3. SPA Fallback - Isse React ke routes online kaam karenge
 app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/App.css';
+import logo from '../assets/short_logo.png';
 
 const Register = () => {
     const [step, setStep] = useState(1);
@@ -24,7 +25,7 @@ const Register = () => {
         e.preventDefault();
         try {
             const res = await axios.post('/api/auth/register', formData);
-            alert("Account Created Successfully! Welcome to Civora. 🌱");
+            alert("Account Created Successfully! Welcome to Civora.");
             navigate('/login'); 
         } catch (err) {
             const msg = err.response?.data?.message || "";
@@ -38,12 +39,21 @@ const Register = () => {
     return (
         <div className="register-full-page">
             <div className="register-card">
-                <div className="login-header">
-                    <span style={{fontSize: '40px'}}>🌱</span>
-                    <h2 style={{ color: '#2e7d32', marginTop: '10px' }}>
-                        {step === 1 ? 'Personal Information' : 'Security Settings'}
-                    </h2>
-                </div>
+                <div className="login-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <img 
+                    src={logo} 
+                    alt="Civora Logo" 
+                    style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        objectFit: 'contain', 
+                        marginBottom: '10px' 
+                    }} 
+                />
+                <h2 style={{ color: '#2e7d32', marginTop: '0px' }}>
+                    {step === 1 ? 'Personal Information' : 'Security Settings'}
+                </h2>
+            </div>
                 
                 
 

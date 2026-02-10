@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/App.css'; 
+import logo from '../assets/short_logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -44,7 +45,16 @@ const Login = () => {
     <div className="login-wrapper">
       <div className="login-card">
         <div className="login-header">
-          <span style={{fontSize: '50px'}}>🌱</span>
+          <img 
+            src={logo} 
+            alt="Civora Logo" 
+            style={{ 
+              width: '60px', 
+              height: '60px', 
+              objectFit: 'contain', 
+              marginBottom: '15px' 
+            }} 
+          />
           <h2>Civora Portal</h2>
           <p>Welcome back! Please sign in to your account.</p>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/App.css';
+import logo from '../assets/short_logo.png';
 
 const Customer = () => {
     const [seeds, setSeeds] = useState([]);
@@ -91,7 +92,14 @@ const Customer = () => {
     return (
         <div style={{ padding: '20px' }}>
             <div className="store-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#2e7d32', color: 'white', padding: '15px 25px', borderRadius: '15px', marginBottom: '30px' }}>
-                <h2 style={{margin: 0}}>🌱 Civora Online Store</h2>
+                <h2 style={{margin: 0, display: 'flex', alignItems: 'center', gap: '10px'}}>
+                <img 
+                src={logo} 
+                alt="Civora Logo" 
+                style={{ width: '35px', height: '35px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} 
+                />
+                Civora Online Store
+                </h2>
                 <div 
                     onClick={() => setShowCartModal(true)} 
                     style={{ background: 'white', color: '#2e7d32', padding: '8px 15px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', transition: '0.3s' }}

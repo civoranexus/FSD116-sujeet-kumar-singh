@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/App.css'; 
+import logo from '../assets/short_logo.png';
 
 const Sidebar = () => {
   const role = localStorage.getItem('role');
@@ -14,7 +15,14 @@ const Sidebar = () => {
   return (
     <div className="sidebar-nav">
       <div className="sidebar-header">
-        <h3>🌱 Nursery App</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img 
+            src={logo} 
+            alt="Civora Logo"  
+            style={{ width: '30px', height: '30px', objectFit: 'contain' }} 
+          />
+          Nursery App
+        </h3>
         <p className="role-badge">{role?.toUpperCase()}</p>
       </div>
       
